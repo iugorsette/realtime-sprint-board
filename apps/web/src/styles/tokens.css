@@ -11,6 +11,12 @@
   --accent: #6142b6;
   --accent-dark: #4e3395;
   --accent-pale: #eee9fb;
+  --priority-low: var(--muted);
+  --priority-medium: #5350a0;
+  --priority-high: #825017;
+  --priority-urgent: #9d3746;
   --control-radius: 8px;
+  --card-radius: 9px;
+  --card-shadow: 0 1px 2px rgb(39 31 62 / 5%);
   --raised-shadow: 0 10px 28px rgb(36 29 62 / 14%);
 }

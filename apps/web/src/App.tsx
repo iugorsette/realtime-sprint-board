@@ -26,6 +26,7 @@ export function App() {
     : undefined;
   const closeDraft = useCallback(() => setDraftColumn(undefined), []);
   const columns = useMemo(() => board ? filterColumns(board.columns, filters) : [], [board, filters]);
+  const columnTotals = useMemo(() => new Map(board?.columns.map((column) => [column.id, column.cards.length])), [board?.columns]);
   const assignees = useMemo(() => new Map(board?.assignees.map((person) => [person.id, person])), [board?.assignees]);
   const tags = useMemo(() => [...new Set(board?.columns.flatMap((column) => column.cards.flatMap((card) => card.tags)))].sort(), [board?.columns]);
 
@@ -70,7 +71,7 @@ export function App() {
               </div>
             </div>
             <BoardGrid
-              columns={columns} assignees={assignees} pending={mutation.isPending}
+              columns={columns} columnTotals={columnTotals} assignees={assignees} pending={mutation.isPending}
               onOpen={openCard} onCreate={setDraftColumn} onMove={move}
               draft={draftColumn ? {
                 columnId: draftColumn,

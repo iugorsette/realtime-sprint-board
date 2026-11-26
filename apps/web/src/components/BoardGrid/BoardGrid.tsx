@@ -46,10 +46,10 @@ function DragCard({ card, assignees, onOpen, pending }: {
   );
 }
 
-function ColumnEnd({ columnId, empty }: { columnId: string; empty: boolean }) {
+function ColumnEnd({ columnId, message }: { columnId: string; message?: string }) {
   const slot = { columnId, beforeCardId: null };
   const { isOver, setNodeRef } = useDroppable({ id: slotId(slot), data: { slot } });
-  return <li ref={setNodeRef} className={styles.end} data-over={isOver || undefined} aria-hidden="true">{empty && 'Drop a card here'}</li>;
+  return <li ref={setNodeRef} className={styles.end} data-over={isOver || undefined} aria-hidden={message ? undefined : true}>{message && <span>{message}</span>}</li>;
 }
 
 function focusHandle(ref: RefObject<HTMLDivElement | null>, cardId: string) {
@@ -60,8 +60,9 @@ function focusHandle(ref: RefObject<HTMLDivElement | null>, cardId: string) {
   });
 }
 
-export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMove, draft }: {
+export function BoardGrid({ columns, columnTotals, assignees, pending, onOpen, onCreate, onMove, draft }: {
   columns: Column[];
+  columnTotals: ReadonlyMap<string, number>;
   draft?: { columnId: string; content: ReactNode };
   assignees: Map<string, Assignee>;
   pending: boolean;
@@ -138,12 +139,20 @@ export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMov
       <div ref={grid} className={styles.grid}>
         {columns.map((column) => {
           const Icon = icons[column.id as keyof typeof icons] ?? LoaderCircle;
+          const visibleCount = column.cards.length;
+          const totalCount = columnTotals.get(column.id) ?? visibleCount;
+          const filtered = visibleCount !== totalCount;
+          const emptyMessage = visibleCount || draft?.columnId === column.id
+            ? undefined
+            : filtered ? 'No matching cards' : 'No cards yet';
           return (
             <section key={column.id} className={styles.column} data-column={column.id} aria-labelledby={`column-${column.id}`}>
               <div className={styles.header}>
                 <span className={styles.columnIcon}><Icon size={15} aria-hidden="true" /></span>
                 <h2 id={`column-${column.id}`}>{column.name}</h2>
-                <span className={styles.count} aria-label={`${column.cards.length} cards`}>{column.cards.length}</span>
+                <span className={styles.count} aria-label={filtered ? `${visibleCount} of ${totalCount} cards` : `${totalCount} cards`}>
+                  {filtered ? `${visibleCount}/${totalCount}` : totalCount}
+                </span>
                 <button type="button" onClick={() => onCreate(column.id)} className={styles.add}
                   aria-label={`Add card to ${column.name}`} disabled={pending || Boolean(draft)}><Plus size={17} aria-hidden="true" /></button>
               </div>
@@ -153,7 +162,7 @@ export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMov
                     onOpen={onOpen} pending={pending} />
                 ))}
                 {draft?.columnId === column.id && <li className={styles.slot}>{draft.content}</li>}
-                <ColumnEnd columnId={column.id} empty={column.cards.length === 0 && draft?.columnId !== column.id} />
+                <ColumnEnd columnId={column.id} message={emptyMessage} />
               </ul>
             </section>
           );

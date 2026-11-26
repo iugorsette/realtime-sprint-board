@@ -17,24 +17,37 @@ export const CardTile = memo(function CardTile({ card, assignees }: {
   card: Card;
   assignees: Map<string, Assignee>;
 }) {
+  const people = card.assigneeIds.flatMap((id) => {
+    const person = assignees.get(id);
+    return person ? [person] : [];
+  });
+  const morePeople = people.slice(2);
+  const [firstTag, ...moreTags] = card.tags;
+
   return (
     <span className={styles.content}>
-      <span className={styles.priority} data-priority={card.priority}>
-        <span aria-hidden="true" className={styles.priorityDot} />{priorityNames[card.priority]}
+      <span className={styles.summary}>
+        <span className={styles.title}>{card.title}</span>
+        {card.description && <span className={styles.description}>{card.description}</span>}
       </span>
-      <span className={styles.title}>{card.title}</span>
-      {card.description && <span className={styles.description}>{card.description}</span>}
       <span className={styles.meta}>
-        <span className={styles.tags}>
-          {card.tags.slice(0, 2).map((tag) => <span key={tag} className={styles.tag}>{tag}</span>)}
-          {card.tags.length > 2 && <span className={styles.tag}>+{card.tags.length - 2}</span>}
+        <span className={styles.priority} data-priority={card.priority}>
+          <span aria-hidden="true" className={styles.priorityDot} />{priorityNames[card.priority]}
         </span>
-        <span className={styles.avatars}>
-          {card.assigneeIds.map((id) => {
-            const person = assignees.get(id);
-            return person && <Avatar key={id} person={person} />;
-          })}
-        </span>
+        {firstTag && (
+          <span className={styles.tags}>
+            <span className={styles.tag} title={firstTag}>{firstTag}</span>
+            {moreTags.length > 0 && <span className={styles.moreTags} title={moreTags.join(', ')}>+{moreTags.length}</span>}
+          </span>
+        )}
+        {people.length > 0 && (
+          <span className={styles.avatars}>
+            {people.slice(0, 2).map((person) => <Avatar key={person.id} person={person} />)}
+            {morePeople.length > 0 && (
+              <span className={styles.morePeople} title={morePeople.map(({ name }) => name).join(', ')}>+{morePeople.length}</span>
+            )}
+          </span>
+        )}
       </span>
     </span>
   );

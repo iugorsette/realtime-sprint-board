@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Trash2, X } from 'lucide-react';
-import { prioritySchema, type Board, type BoardChange, type Card, type Priority } from '@board/shared';
+import { ChevronDown, Flag, Tags, Trash2, Users, X } from 'lucide-react';
+import { prioritySchema, type Board, type BoardChange, type Card } from '@board/shared';
 import { RequestError, type CardAction } from '../../board/api';
 import { useCardEdits } from '../../board/useCardEdits';
 import { AssigneePicker } from '../AssigneePicker/AssigneePicker';
@@ -101,13 +101,13 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
           </section>
           <dl className={styles.properties}>
             <div>
-              <dt>Priority</dt>
+              <dt><Flag size={14} aria-hidden="true" /> Priority</dt>
               <dd className={styles.priority} data-priority={displayed.priority}>
                 <select aria-label="Priority" value={displayed.priority} disabled={busyElsewhere} onChange={(event) => {
                   const value = prioritySchema.parse(event.target.value);
                   edit({ field: 'priority', value });
                 }}>
-                  {(Object.keys(priorityNames) as Priority[]).map((priority) => (
+                  {prioritySchema.options.map((priority) => (
                     <option key={priority} value={priority}>{priorityNames[priority]}</option>
                   ))}
                 </select>
@@ -115,14 +115,14 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
               </dd>
             </div>
             <div>
-              <dt>Assignees</dt>
+              <dt><Users size={14} aria-hidden="true" /> Assignees</dt>
               <dd>
                 <AssigneePicker assignees={board.assignees} value={displayed.assigneeIds} compact
                   onChange={(ids) => changeList('assigneeIds', ids)} />
               </dd>
             </div>
             <div>
-              <dt>Tags</dt>
+              <dt><Tags size={14} aria-hidden="true" /> Tags</dt>
               <dd>
                 <TagPicker label="Tags" options={availableTags} value={displayed.tags} allowCreate compact
                   onChange={(tags) => changeList('tags', tags)} />

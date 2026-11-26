@@ -42,7 +42,7 @@ export function FiltersBar({ filters, onChange, assignees, tags }: {
 }) {
   const active = filters.search || filters.assignee || filters.priorities.length > 0 || filters.tags.length > 0;
   return (
-    <div className={styles.bar} aria-label="Board filters">
+    <div className={styles.bar} role="group" aria-label="Board filters">
       <label className={styles.search}>
         <Search size={16} aria-hidden="true" />
         <input type="search" placeholder="Search cards…" aria-label="Search cards" value={filters.search}
