@@ -32,6 +32,7 @@
   --lane-border: #d4a393;
   --tag-text: #69437b;
   --tag-background: #edddf0;
+  --tag-radius: 999px;
   --control-radius: 9px;
   --card-radius: 12px 10px 13px 9px;
   --card-shadow: 0 2px 0 rgb(89 55 34 / 9%);
@@ -62,3 +63,4 @@
 [data-tag-tone="1"] { --tag-text: #215849; --tag-background: #d7e8db; }
 [data-tag-tone="2"] { --tag-text: #7d3e23; --tag-background: #f5dcc7; }
 [data-tag-tone="3"] { --tag-text: #385379; --tag-background: #dbe5ef; }
+[data-tag-tone] { --tag-border: color-mix(in srgb, var(--tag-text) 38%, var(--tag-background)); }
