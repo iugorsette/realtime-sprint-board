@@ -88,7 +88,7 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
       if (confirmDelete) cancelDeletion();
       else onClose();
     }}>
-      <CardSurface className={styles.surface}>
+      <CardSurface className={styles.surface} data-column={column?.id}>
         <header className={styles.header}>
           <div className={styles.titleRow}>
             <h2 ref={heading} tabIndex={-1} aria-label={displayed.title}>

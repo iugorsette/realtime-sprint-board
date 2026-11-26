@@ -1,6 +1,6 @@
 # Architecture
 
-The pnpm workspace contains a React/Vite SPA, a NestJS HTTP and Socket.IO API, and shared Zod contracts and ordering math. Prisma persists data in local PostgreSQL. Vite proxies HTTP and Socket.IO requests to the loopback API. UI components own colocated CSS Modules and use global design tokens.
+The pnpm workspace contains a React/Vite SPA, a NestJS HTTP and Socket.IO API, and shared Zod contracts and ordering math. Prisma persists data in local PostgreSQL. Vite proxies HTTP and Socket.IO requests to the loopback API. UI components own colocated CSS Modules and use global design tokens. The board pairs Fraunces headings with DM Sans text and uses distinct column tones over a warm background. Column, priority and tag colors are shared between the board and card detail surfaces.
 
 Card contracts carry assignee IDs in an array. PostgreSQL stores assignments in a join table, and the API validates board membership before updating assignments in the card transaction. The migration backfills existing assignments before removing the original column.
 

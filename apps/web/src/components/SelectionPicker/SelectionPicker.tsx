@@ -6,6 +6,7 @@ export interface PickerOption {
   id: string;
   label: string;
   icon?: ReactNode;
+  tone?: number;
 }
 
 export function SelectionPicker({
@@ -60,9 +61,9 @@ export function SelectionPicker({
       }}>
       {selected.length > 0 && (
         <ul className={styles.chips} aria-label={`Selected ${itemName}s`}>
-          {selected.map(({ id, label, icon }) => (
+          {selected.map(({ id, label, icon, tone }) => (
             <li key={id}>
-              <button type="button" aria-label={`Remove ${itemName} ${label}`} onClick={() => {
+              <button type="button" data-tag-tone={tone} aria-label={`Remove ${itemName} ${label}`} onClick={() => {
                 (input.current ?? add.current)?.focus({ preventScroll: true });
                 onRemove(id);
                 close();

@@ -1,22 +1,64 @@
 :root {
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-  --canvas: #f8f8fa;
-  --surface: #fff;
-  --well: #f1f1f5;
-  --surface-muted: #f1f0f5;
-  --text: #262438;
-  --ink-soft: #45425a;
-  --muted: #67647b;
-  --line: #dedde6;
-  --accent: #6142b6;
-  --accent-dark: #4e3395;
-  --accent-pale: #eee9fb;
-  --priority-low: var(--muted);
-  --priority-medium: #5350a0;
-  --priority-high: #825017;
-  --priority-urgent: #9d3746;
-  --control-radius: 8px;
-  --card-radius: 9px;
-  --card-shadow: 0 1px 2px rgb(39 31 62 / 5%);
-  --raised-shadow: 0 10px 28px rgb(36 29 62 / 14%);
+  font-family: "DM Sans Variable", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --canvas: #f5eddf;
+  --canvas-grain: #dbc9ac;
+  --surface: #fffaf1;
+  --surface-muted: #f3e8d7;
+  --text: #302721;
+  --ink-soft: #54483d;
+  --muted: #69584a;
+  --line: #d8c6ad;
+  --accent: #9d432c;
+  --accent-dark: #7b3123;
+  --accent-pale: #f4d9c9;
+  --masthead: #244136;
+  --masthead-text: #fff3dc;
+  --masthead-muted: #e1dcc7;
+  --masthead-line: #546a55;
+  --brand-mark: #efbd68;
+  --live-ink: #225c44;
+  --live-surface: #d8ebc9;
+  --warning-ink: #774615;
+  --warning-surface: #f6d9a6;
+  --danger: #9b303c;
+  --priority-low: #3f674f;
+  --priority-medium: #59477e;
+  --priority-high: #87480e;
+  --priority-urgent: var(--danger);
+  --lane-accent: #7d3f47;
+  --lane-header: #efc2b5;
+  --lane-surface: #f3ded2;
+  --lane-border: #d4a393;
+  --tag-text: #69437b;
+  --tag-background: #edddf0;
+  --control-radius: 9px;
+  --card-radius: 12px 10px 13px 9px;
+  --card-shadow: 0 2px 0 rgb(89 55 34 / 9%);
+  --raised-shadow: 0 15px 28px rgb(69 42 26 / 17%);
 }
+
+[data-column="todo"] {
+  --lane-accent: #724d16;
+  --lane-header: #f3cf83;
+  --lane-surface: #f6e7c0;
+  --lane-border: #d9b571;
+}
+
+[data-column="in-progress"] {
+  --lane-accent: #514170;
+  --lane-header: #d1c4e8;
+  --lane-surface: #e9e0f4;
+  --lane-border: #baa7d4;
+}
+
+[data-column="done"] {
+  --lane-accent: #315940;
+  --lane-header: #b8d8ad;
+  --lane-surface: #dcebd1;
+  --lane-border: #a1c393;
+}
+
+[data-tag-tone="1"] { --tag-text: #215849; --tag-background: #d7e8db; }
+[data-tag-tone="2"] { --tag-text: #7d3e23; --tag-background: #f5dcc7; }
+[data-tag-tone="3"] { --tag-text: #385379; --tag-background: #dbe5ef; }

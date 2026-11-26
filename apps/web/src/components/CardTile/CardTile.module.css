@@ -20,10 +20,10 @@
 .title {
   -webkit-line-clamp: 2;
   color: var(--text);
-  font-size: .91rem;
+  font-size: .94rem;
   line-height: 1.35;
   letter-spacing: -.012em;
-  font-weight: 680;
+  font-weight: 700;
 }
 
 .description {
@@ -41,6 +41,8 @@
   min-height: 35px;
   padding: 5px 11px;
   border-top: 1px solid var(--surface-muted);
+  background: color-mix(in srgb, var(--surface-muted) 28%, var(--surface));
+  border-radius: 0 0 12px 8px;
 }
 
 .priority {
@@ -70,9 +72,10 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  background: var(--surface-muted);
-  padding: 2px 5px;
-  border-radius: 4px;
+  background: var(--tag-background);
+  color: var(--tag-text);
+  padding: 2px 6px;
+  border-radius: 5px;
 }
 .moreTags { flex: none; }
 
@@ -94,12 +97,12 @@
   width: 25px;
   height: 25px;
   border-radius: 50%;
-  background: #ede6fb;
-  color: #5a3a86;
+  background: #ead6ed;
+  color: #66376f;
   font-size: .62rem;
   font-weight: 750;
 }
 
-.avatar[data-color="1"] { background: #dceee6; color: #2d6650; }
-.avatar[data-color="2"] { background: #f8e8d5; color: #794c21; }
-.avatar[data-color="3"] { background: #e2eafa; color: #3d568e; }
+.avatar[data-color="1"] { background: #cce4d3; color: #285a44; }
+.avatar[data-color="2"] { background: #efd1ad; color: #753f1a; }
+.avatar[data-color="3"] { background: #d8e3f1; color: #385379; }

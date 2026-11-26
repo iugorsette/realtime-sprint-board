@@ -1,5 +1,6 @@
 import { memo, type ComponentPropsWithRef } from 'react';
 import type { Assignee, Card } from '@board/shared';
+import { tagTone } from '../../styles/tagTone';
 import styles from './CardTile.module.css';
 
 export const priorityNames = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High', URGENT: 'Urgent' } as const;
@@ -36,7 +37,7 @@ export const CardTile = memo(function CardTile({ card, assignees }: {
         </span>
         {firstTag && (
           <span className={styles.tags}>
-            <span className={styles.tag} title={firstTag}>{firstTag}</span>
+            <span className={styles.tag} data-tag-tone={tagTone(firstTag)} title={firstTag}>{firstTag}</span>
             {moreTags.length > 0 && <span className={styles.moreTags} title={moreTags.join(', ')}>+{moreTags.length}</span>}
           </span>
         )}

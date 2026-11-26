@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import { tagTone } from '../../styles/tagTone';
 import { SelectionPicker, type PickerOption } from '../SelectionPicker/SelectionPicker';
 
 export function TagPicker({ label, options, value, onChange, allowCreate = false, compact }: {
@@ -25,7 +26,7 @@ export function TagPicker({ label, options, value, onChange, allowCreate = false
     <SelectionPicker
       label={label} itemName="tag" placeholder={allowCreate ? 'Add a tag…' : 'Filter by tag…'}
       inline={allowCreate} compact={compact} maxLength={30} limitReached={allowCreate && value.length >= 10}
-      selected={value.map((tag) => ({ id: tag, label: tag }))}
+      selected={value.map((tag) => ({ id: tag, label: tag, tone: tagTone(tag) }))}
       getOptions={getOptions}
       onSelect={(tag) => onChange([...value, tag])}
       onRemove={(tag) => onChange(value.filter((item) => item !== tag))}
