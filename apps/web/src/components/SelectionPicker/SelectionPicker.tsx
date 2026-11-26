@@ -51,6 +51,23 @@ export function SelectionPicker({
     setActiveId(undefined);
   }
 
+  const chips = selected.length > 0 && (
+    <ul className={styles.chips} aria-label={`Selected ${itemName}s`}>
+      {selected.map(({ id, label, icon, tone }) => (
+        <li key={id}>
+          <button type="button" data-tag-tone={tone} aria-label={`Remove ${itemName} ${label}`} onClick={() => {
+            (input.current ?? add.current)?.focus({ preventScroll: true });
+            onRemove(id);
+            close();
+          }}>
+            {icon && <span className={styles.optionIcon} aria-hidden="true">{icon}</span>}
+            {label}<X size={12} aria-hidden="true" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     <div className={styles.picker} data-inline={inline || undefined} data-compact={compact || undefined}
       onBlur={(event) => {
@@ -59,22 +76,7 @@ export function SelectionPicker({
           setQuery('');
         }
       }}>
-      {selected.length > 0 && (
-        <ul className={styles.chips} aria-label={`Selected ${itemName}s`}>
-          {selected.map(({ id, label, icon, tone }) => (
-            <li key={id}>
-              <button type="button" data-tag-tone={tone} aria-label={`Remove ${itemName} ${label}`} onClick={() => {
-                (input.current ?? add.current)?.focus({ preventScroll: true });
-                onRemove(id);
-                close();
-              }}>
-                {icon && <span className={styles.optionIcon} aria-hidden="true">{icon}</span>}
-                {label}<X size={12} aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {!compact && chips}
       {compact && !editing ? (
         <button ref={add} type="button" className={styles.add} disabled={limitReached} onClick={() => setEditing(true)}>
           <Plus size={14} aria-hidden="true" /> Add {itemName}
@@ -121,6 +123,7 @@ export function SelectionPicker({
           }
         }}
       />}
+      {compact && chips}
       {open && (
         <ul id={list} role="listbox" aria-label={`${label} suggestions`} className={styles.options}>
           {choices.length === 0 && <li role="presentation" className={styles.empty}>No matching {itemName}s</li>}

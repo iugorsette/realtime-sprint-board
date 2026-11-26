@@ -30,4 +30,6 @@ TanStack Query owns the board snapshot. Local state owns filter selections, inli
 
 The card details stay open during editing. A queue sends each field change against the latest known card version and applies list additions and removals individually. Status selection uses the same version-checked move endpoint as drag and drop. Pending field changes render immediately and failed writes revert through the queue and query cache.
 
+The full-viewport card dialog handles scrolling for tall content. The card surface grows with its contents. The compact tag picker places its button or input before the selected chips in the layout and tab order, and caps the width of the control at 18 rem. It anchors a wrapping panel of suggestions to the input outside the card layout and can flip the panel above the input on short viewports.
+
 The browser stores presentation preferences in local storage. Filter state and the suggestions derived from the board are local to the current view.

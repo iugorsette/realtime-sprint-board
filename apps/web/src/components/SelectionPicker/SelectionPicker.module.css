@@ -28,10 +28,37 @@
   background: color-mix(in srgb, var(--tag-text) 9%, var(--tag-background));
 }
 .chips button[data-tag-tone] svg { flex: none; }
+.picker[data-compact] { display: flex; align-items: flex-start; }
+.picker[data-compact] :is(.add, .input) { max-width: min(18rem, 100%); }
+.picker[data-compact]:has(.chips) .input { max-width: min(18rem, 45%); }
+.picker[data-compact] .chips { flex: 1; min-width: 0; min-height: 36px; align-content: center; }
 .picker[data-compact] .options {
   position: absolute;
-  inset: calc(100% + 4px) 0 auto;
+  inset: calc(100% + 4px) auto auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: max-content;
+  max-width: min(30rem, 100%);
+  padding: 6px;
   box-shadow: var(--raised-shadow);
+}
+:where(.picker[data-compact]) .options [role="option"] { background: var(--surface-muted); }
+@supports (position-area: bottom span-right) and (position-try-fallbacks: flip-block) {
+  .picker[data-compact] { anchor-scope: --compact-picker-input; }
+  .picker[data-compact] .input { anchor-name: --compact-picker-input; }
+  .picker[data-compact] .options {
+    position: fixed;
+    position-anchor: --compact-picker-input;
+    position-area: bottom span-right;
+    position-try-fallbacks: flip-block;
+    justify-self: start;
+    inset: auto;
+    margin-block: 4px;
+    max-width: min(30rem, calc(100% - 12px));
+    max-height: min(192px, 42dvh);
+    overscroll-behavior: contain;
+  }
 }
 .add {
   display: inline-flex;
