@@ -1,8 +1,9 @@
-import { useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
-import { ChevronDown, Plus, X } from 'lucide-react';
+import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
+import { Plus, X } from 'lucide-react';
 import { prioritySchema, type Board, type BoardChange, type Card } from '@board/shared';
 import { RequestError, type CardAction } from '../../board/api';
 import { useCardEdits } from '../../board/useCardEdits';
+import { ChoiceMenu } from '../ChoiceMenu/ChoiceMenu';
 import { AssigneePicker } from '../AssigneePicker/AssigneePicker';
 import { Avatar, CardSurface, priorityNames } from '../CardTile/CardTile';
 import { TagPicker } from '../TagPicker/TagPicker';
@@ -29,7 +30,6 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
   onClose: () => void;
   onSave: (action: CardAction) => Promise<BoardChange | null>;
 }) {
-  const priorityId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const deleteAction = useRef<HTMLButtonElement>(null);
@@ -37,7 +37,7 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const { card: displayed, edit, saving, error } = useCardEdits(board.id, card, onSave);
-  const column = board.columns.find(({ id }) => id === card.columnId);
+  const column = board.columns.find(({ id }) => id === displayed.columnId);
   const assigned = board.assignees.filter(({ id }) => displayed.assigneeIds.includes(id));
   const busy = pending || saving;
   const busyElsewhere = pending && !saving;
@@ -100,25 +100,19 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
             </button>
           </div>
           <div className={styles.subheader} role="group" aria-label="Card properties">
-            {column && (
-              <div className={styles.property}>
-                <span className={styles.propertyLabel}>Status</span>
-                <span className={styles.column} data-column={column.id}>{column.name}</span>
-              </div>
-            )}
             <div className={styles.property}>
-              <label className={styles.propertyLabel} htmlFor={priorityId}>Priority</label>
-              <span className={styles.priority} data-priority={displayed.priority}>
-                <select id={priorityId} value={displayed.priority} disabled={busyElsewhere} onChange={(event) => {
-                  const value = prioritySchema.parse(event.target.value);
-                  edit({ field: 'priority', value });
-                }}>
-                  {prioritySchema.options.map((priority) => (
-                    <option key={priority} value={priority}>{priorityNames[priority]}</option>
-                  ))}
-                </select>
-                <ChevronDown size={12} aria-hidden="true" />
-              </span>
+              <span className={styles.propertyLabel}>Status</span>
+              <ChoiceMenu label="Status" selected={[displayed.columnId]} disabled={busyElsewhere}
+                trigger={<span className={styles.column} data-column={column?.id}>{column?.name ?? 'Status'}</span>}
+                options={board.columns.map(({ id, name }) => ({ value: id, label: name, column: id }))}
+                onSelect={(value) => edit({ field: 'columnId', value })} />
+            </div>
+            <div className={styles.property}>
+              <span className={styles.propertyLabel}>Priority</span>
+              <ChoiceMenu label="Priority" selected={[displayed.priority]} disabled={busyElsewhere}
+                trigger={<span className={styles.priority} data-priority={displayed.priority}>{priorityNames[displayed.priority]}</span>}
+                options={prioritySchema.options.map((value) => ({ value, label: priorityNames[value], priority: value }))}
+                onSelect={(value) => edit({ field: 'priority', value })} />
             </div>
             <div className={`${styles.property} ${styles.assigneeProperty}`}>
               <span className={styles.propertyLabel}>Assignees</span>

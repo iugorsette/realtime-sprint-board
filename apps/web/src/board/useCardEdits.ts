@@ -29,6 +29,14 @@ export function useCardEdits(boardId: string, card: Card, save: SaveCard) {
         if ('previous' in change && change.previous !== base[change.field]) {
           throw new Error('This field changed in another tab. Open the field again to edit it.');
         }
+        if (change.field === 'columnId') {
+          const result = await save({
+            type: 'move', id: card.id,
+            input: { targetColumnId: change.value, beforeCardId: null, expectedVersion: base.version },
+          });
+          acknowledged.current = result?.cards.find(({ id }) => id === card.id) ?? lastSaved;
+          return;
+        }
         const input = updateCardSchema.safeParse({
           title: updated.title, description: updated.description, priority: updated.priority,
           tags: updated.tags, assigneeIds: updated.assigneeIds, expectedVersion: base.version,

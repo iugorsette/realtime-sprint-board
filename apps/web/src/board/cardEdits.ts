@@ -6,6 +6,7 @@ type ListField = 'tags' | 'assigneeIds';
 export type CardEdit =
   | { field: TextField; value: string; previous: string }
   | { field: 'priority'; value: Priority }
+  | { field: 'columnId'; value: string }
   | { field: ListField; value: string; operation: 'add' | 'remove' };
 
 export function applyCardEdit(card: Card, edit: CardEdit): Card {
