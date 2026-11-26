@@ -75,7 +75,7 @@ export function App() {
               onOpen={openCard} onCreate={setDraftColumn} onMove={move}
               draft={draftColumn ? {
                 columnId: draftColumn,
-                content: <CardComposer columnId={draftColumn} assignees={board.assignees} availableTags={tags}
+                content: <CardComposer columnId={draftColumn}
                   pending={mutation.isPending} onClose={closeDraft}
                   onSave={async (input) => { await mutation.mutateAsync({ type: 'create', input }); }} />,
               } : undefined}

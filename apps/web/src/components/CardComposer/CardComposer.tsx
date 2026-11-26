@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { createCardSchema, type Assignee, type CreateCard } from '@board/shared';
-import { CardFields, readCardFields } from '../CardFields/CardFields';
+import { createCardSchema, type CreateCard } from '@board/shared';
 import { CardSurface } from '../CardTile/CardTile';
 import styles from './CardComposer.module.css';
 
-export function CardComposer({ columnId, assignees, availableTags, pending, onClose, onSave }: {
+export function CardComposer({ columnId, pending, onClose, onSave }: {
   columnId: string;
-  assignees: Assignee[];
-  availableTags: string[];
   pending: boolean;
   onClose: () => void;
   onSave: (input: CreateCard) => Promise<void>;
@@ -18,13 +15,24 @@ export function CardComposer({ columnId, assignees, availableTags, pending, onCl
 
   useEffect(() => { title.current?.focus(); }, []);
 
-  async function save(form: HTMLFormElement) {
+  async function save(closeIfBlank = false) {
     if (pending || saving.current) return;
-    const fields = readCardFields(form);
-    if (!String(fields.title ?? '').trim()) return;
-    const parsed = createCardSchema.safeParse({ ...fields, columnId });
+    const value = title.current?.value.trim();
+    if (!value) {
+      if (closeIfBlank) onClose();
+      return;
+    }
+
+    const parsed = createCardSchema.safeParse({
+      columnId,
+      title: value,
+      description: '',
+      priority: 'MEDIUM',
+      assigneeIds: [],
+      tags: [],
+    });
     if (!parsed.success) {
-      setError('Check the title and use up to 10 tags of 30 characters each.');
+      setError('Enter a title of up to 120 characters.');
       return;
     }
     saving.current = true;
@@ -41,30 +49,30 @@ export function CardComposer({ columnId, assignees, availableTags, pending, onCl
 
   return (
     <CardSurface className={styles.card}>
-      <form
-        aria-label="New card"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void save(event.currentTarget);
-        }}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) void save(event.currentTarget);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape' && !pending && !saving.current) {
-            event.preventDefault();
-            onClose();
-          }
-        }}
-      >
-        <CardFields titleRef={title} assignees={assignees} availableTags={availableTags} pending={pending} />
+      <form aria-label="New card" aria-busy={pending} onSubmit={(event) => {
+        event.preventDefault();
+        void save();
+      }}>
+        <input
+          ref={title}
+          className={styles.title}
+          name="title"
+          aria-label="Title"
+          placeholder="Enter a title…"
+          enterKeyHint="done"
+          maxLength={120}
+          readOnly={pending}
+          onChange={() => setError('')}
+          onBlur={() => void save(true)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && !event.nativeEvent.isComposing && !pending && !saving.current) {
+              event.preventDefault();
+              onClose();
+            }
+          }}
+        />
+        {pending && <span className={styles.status} role="status">Saving…</span>}
         {error && <p className={styles.error} role="alert">{error}</p>}
-        <div className={styles.footer}>
-          <span role="status">{pending ? 'Saving…' : 'Saves when you leave the card'}</span>
-          <button type="submit" hidden disabled={pending}>Create card</button>
-          <button type="button" onPointerDown={(event) => event.preventDefault()}
-            onClick={onClose} disabled={pending}>Cancel</button>
-        </div>
       </form>
     </CardSurface>
   );
