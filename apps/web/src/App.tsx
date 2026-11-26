@@ -16,10 +16,14 @@ export function App() {
   const { query, mutation, connection, retry } = useBoard(DEMO_BOARD_ID);
   const { data: board } = query;
   const [filters, setFilters] = useState(emptyFilters);
-  const [selectedCard, setSelectedCard] = useState<Card>();
+  const [selectedCardId, setSelectedCardId] = useState<string>();
   const [draftColumn, setDraftColumn] = useState<string>();
   const [notice, setNotice] = useState('');
-  const closeCard = useCallback(() => setSelectedCard(undefined), []);
+  const openCard = useCallback((card: Card) => setSelectedCardId(card.id), []);
+  const closeCard = useCallback(() => setSelectedCardId(undefined), []);
+  const selectedCard = selectedCardId
+    ? board?.columns.flatMap(({ cards }) => cards).find(({ id }) => id === selectedCardId)
+    : undefined;
   const closeDraft = useCallback(() => setDraftColumn(undefined), []);
   const columns = useMemo(() => board ? filterColumns(board.columns, filters) : [], [board, filters]);
   const assignees = useMemo(() => new Map(board?.assignees.map((person) => [person.id, person])), [board?.assignees]);
@@ -67,15 +71,15 @@ export function App() {
             </div>
             <BoardGrid
               columns={columns} assignees={assignees} pending={mutation.isPending}
-              onOpen={setSelectedCard} onCreate={setDraftColumn} onMove={move}
+              onOpen={openCard} onCreate={setDraftColumn} onMove={move}
               draft={draftColumn ? {
                 columnId: draftColumn,
                 content: <CardComposer columnId={draftColumn} assignees={board.assignees} availableTags={tags}
                   pending={mutation.isPending} onClose={closeDraft}
-                  onSave={(input) => mutation.mutateAsync({ type: 'create', input })} />,
+                  onSave={async (input) => { await mutation.mutateAsync({ type: 'create', input }); }} />,
               } : undefined}
             />
-            {selectedCard && <CardDialog board={board} card={selectedCard} availableTags={tags} pending={mutation.isPending} onClose={closeCard}
+            {selectedCard && <CardDialog key={selectedCard.id} board={board} card={selectedCard} availableTags={tags} pending={mutation.isPending} onClose={closeCard}
               onSave={(action) => mutation.mutateAsync(action)} />}
           </>
         ) : query.isError ? (

@@ -100,6 +100,7 @@ export class BoardSync {
       const change = await changeCard(action, socketId);
       if (snapshot && action.type === 'move') this.write(snapshot);
       if (change) this.receive(change);
+      return change;
     } catch (error) {
       if (snapshot && action.type === 'move') this.write(snapshot);
       if (error instanceof RequestError && error.conflict && 'id' in action) {
