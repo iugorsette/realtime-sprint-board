@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Columns3, Radio, Settings, X } from 'lucide-react';
 import { DEMO_BOARD_ID, type Card, type MoveCard } from '@board/shared';
-import { useBoard } from './board/useBoard';
+import { useOfflineBoard } from './board/useOfflineBoard';
+import { cardId, findCard } from './board/offline';
 import { usePreferences } from './board/preferences';
 import { PreferencesDialog } from './components/Preferences/PreferencesDialog';
 import { filterColumns } from './board/model';
@@ -10,24 +11,35 @@ import { BoardGrid } from './components/BoardGrid/BoardGrid';
 import { CardDialog } from './components/CardDialog/CardDialog';
 import { CardComposer } from './components/CardComposer/CardComposer';
 import { emptyFilters, FiltersBar } from './components/FiltersBar/FiltersBar';
+import { SyncDialog } from './components/SyncDialog/SyncDialog';
 import styles from './App.module.css';
 
-const connectionLabels = { connecting: 'Connecting', live: 'Live sync', offline: 'Sync offline' };
+const connectionLabels = { connecting: 'Connecting', live: 'Live sync', offline: 'Connection lost' };
 
 export function App() {
-  const { query, mutation, connection, retry } = useBoard(DEMO_BOARD_ID);
-  const { data: board } = query;
+  const sync = useOfflineBoard(DEMO_BOARD_ID);
+  const { board, query, mutation, connection, offline, syncing, pendingCount } = sync;
   const { preferences, setPreferences } = usePreferences();
   const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [syncView, setSyncView] = useState<'sync' | 'review'>();
+  const [reviewId, setReviewId] = useState<string>();
   const [filters, setFilters] = useState(emptyFilters);
   const [selectedCardId, setSelectedCardId] = useState<string>();
   const [draftColumn, setDraftColumn] = useState<string>();
   const [notice, setNotice] = useState('');
   const openCard = useCallback((card: Card) => setSelectedCardId(card.id), []);
   const closeCard = useCallback(() => setSelectedCardId(undefined), []);
-  const selectedCard = selectedCardId
-    ? board?.columns.flatMap(({ cards }) => cards).find(({ id }) => id === selectedCardId)
-    : undefined;
+  const selectedCard = selectedCardId && board ? findCard(board, selectedCardId) : undefined;
+  const reviewIds = [...new Set(sync.conflicts.map(cardId))];
+  const activeReviewId = reviewId && reviewIds.includes(reviewId) ? reviewId : reviewIds[0];
+  const reviewChanges = syncView === 'review' ? sync.conflicts.filter((change) => cardId(change) === activeReviewId) : [];
+  const reviewCard = board && activeReviewId && reviewChanges.length > 0 ? findCard(board, activeReviewId) : undefined;
+  const displayedCard = reviewChanges[0] ? reviewCard ?? reviewChanges[0].original : selectedCard;
+  const reviewing = reviewChanges.length > 0;
+  const syncOpen = syncView === 'sync';
+  useEffect(() => {
+    if (syncView === 'review' && !reviewing && !syncing) setSyncView(undefined);
+  }, [syncView, reviewing, syncing]);
   const closeDraft = useCallback(() => setDraftColumn(undefined), []);
   const columns = useMemo(() => board ? filterColumns(board.columns, filters) : [], [board, filters]);
   const columnTotals = useMemo(() => new Map(board?.columns.map((column) => [column.id, column.cards.length])), [board?.columns]);
@@ -35,6 +47,7 @@ export function App() {
   const tags = useMemo(() => [...new Set(board?.columns.flatMap((column) => column.cards.flatMap((card) => card.tags)))].sort(), [board?.columns]);
 
   async function move(card: Card, input: MoveCard) {
+    if (offline || syncing) return;
     setNotice('');
     try {
       await mutation.mutateAsync({ type: 'move', id: card.id, input });
@@ -46,6 +59,21 @@ export function App() {
   const total = board?.columns.reduce((sum, column) => sum + column.cards.length, 0) ?? 0;
   const done = board?.columns.find(({ id }) => id === 'done')?.cards.length ?? 0;
   const shown = columns.reduce((sum, column) => sum + column.cards.length, 0);
+  const syncLabel = syncing || (!offline && query.isFetching) ? 'Syncing…'
+    : offline ? 'Working offline' : connectionLabels[query.isError ? 'offline' : connection];
+  const pendingLabel = sync.conflicts.length ? `${sync.conflicts.length} to review` : `${pendingCount} pending`;
+  const syncStatus = pendingCount > 0 ? `${syncLabel} · ${pendingLabel}` : syncLabel;
+
+  function openReview(id?: string) {
+    setReviewId(id);
+    setSelectedCardId(undefined);
+    setSyncView('review');
+  }
+
+  function closeDetails() {
+    if (reviewing) setSyncView(undefined);
+    else closeCard();
+  }
 
   return (
     <>
@@ -53,9 +81,15 @@ export function App() {
         <div className={styles.topInner}>
           <h1 className={styles.brand}><span className={styles.logo}><Columns3 size={18} aria-hidden="true" /></span><span className={styles.brandName}>{board?.name ?? 'Sprint Board'}</span></h1>
           <div className={styles.topRight}>
-            <span className={styles.connection} data-connection={connection} role="status">
-              <Radio size={15} aria-hidden="true" /> {connectionLabels[connection]}
-            </span>
+            <button type="button" className={styles.connection} data-connection={offline ? 'offline' : connection}
+              aria-label={syncStatus} aria-haspopup="dialog" aria-expanded={syncOpen || reviewing}
+              onClick={() => {
+                if (reviewIds.length) openReview();
+                else setSyncView('sync');
+              }}>
+              <Radio size={15} aria-hidden="true" />
+              <span role="status">{syncStatus}</span>
+            </button>
             {board && (
               <div className={styles.people} aria-label="Board assignees">
                 {board.assignees.map((person) => <Avatar key={person.id} person={person} />)}
@@ -67,6 +101,14 @@ export function App() {
         </div>
       </header>
       {preferencesOpen && <PreferencesDialog value={preferences} onChange={setPreferences} onClose={() => setPreferencesOpen(false)} />}
+      {syncOpen && <SyncDialog board={sync.server} offline={offline} syncing={syncing || mutation.isPending} pendingCount={pendingCount}
+        notice={sync.notice} conflictCount={sync.conflicts.length} onClose={() => setSyncView(undefined)}
+        onWorkOffline={sync.workOffline} onReview={() => openReview()} onResume={async () => {
+          if (await sync.resume()) {
+            setReviewId(undefined);
+            setSyncView((view) => view === 'sync' ? 'review' : view);
+          }
+        }} />}
       <main className={styles.main}>
         {board ? (
           <>
@@ -79,29 +121,39 @@ export function App() {
               </div>
             </div>
             <BoardGrid
-              columns={columns} columnTotals={columnTotals} assignees={assignees} pending={mutation.isPending}
+              columns={columns} columnTotals={columnTotals} assignees={assignees} pending={mutation.isPending || syncing}
+              dragDisabled={offline || syncing} pendingCards={sync.pendingCards}
               onOpen={openCard} onCreate={setDraftColumn} onMove={move}
               draft={draftColumn ? {
                 columnId: draftColumn,
                 content: <CardComposer columnId={draftColumn}
-                  pending={mutation.isPending} onClose={closeDraft}
-                  onSave={async (input) => { await mutation.mutateAsync({ type: 'create', input }); }} />,
+                  pending={mutation.isPending || syncing} offline={offline} onClose={closeDraft}
+                  onSave={sync.create} onDiscard={sync.discardCreation} onWorkOffline={sync.workOffline} />,
               } : undefined}
             />
-            {selectedCard && <CardDialog key={selectedCard.id} board={board} card={selectedCard} availableTags={tags} pending={mutation.isPending} onClose={closeCard}
-              onSave={(action) => mutation.mutateAsync(action)} />}
+            {displayedCard && <CardDialog key={displayedCard.id} board={board} card={displayedCard} availableTags={tags}
+              pending={mutation.isPending} onClose={closeDetails} offline={offline} syncing={syncing}
+              onReview={!reviewing && reviewIds.includes(displayedCard.id) ? () => openReview(displayedCard.id) : undefined}
+              review={reviewing ? {
+                changes: reviewChanges, deleted: !reviewCard, notice: sync.notice, onResolve: sync.resolve,
+                onRecoverDeleted: sync.recoverDeleted,
+                onNext: reviewIds.length > 1 ? () => setReviewId(reviewIds[(reviewIds.indexOf(displayedCard.id) + 1) % reviewIds.length]) : undefined,
+                onSyncSettings: () => setSyncView('sync'),
+              } : undefined}
+              onSave={(action) => mutation.mutateAsync(action)}
+              onSaveText={sync.saveText} onDiscardText={sync.discardText} onWorkOffline={sync.workOffline} />}
           </>
         ) : query.isError ? (
           <div className={styles.placeholder} role="alert">
             <p>Couldn’t load the sprint board.</p>
-            <button type="button" className={styles.primary} onClick={retry}>Try again</button>
+            <button type="button" className={styles.primary} onClick={sync.retry}>Try again</button>
           </div>
         ) : <p className={styles.placeholder} role="status">Loading sprint board…</p>}
       </main>
-      {notice && (
+      {(notice || (sync.notice && !syncOpen && !reviewing)) && (
         <div className={styles.toast}>
-          <span role="status">{notice}</span>
-          <button type="button" aria-label="Dismiss message" onClick={() => setNotice('')}><X size={16} /></button>
+          <span role="status">{notice || sync.notice}</span>
+          <button type="button" aria-label="Dismiss message" onClick={() => { setNotice(''); sync.setNotice(''); }}><X size={16} /></button>
         </div>
       )}
     </>

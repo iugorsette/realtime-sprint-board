@@ -25,7 +25,7 @@
 }
 .header { padding: 23px var(--detail-gap) 0; background: color-mix(in srgb, var(--lane-surface) 35%, var(--surface)); border-radius: 11px 11px 0 0; }
 .titleRow { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
-.titleEditor { flex: 1; min-width: 0; }
+.titleEditor { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .titleRow h2 {
   margin: 0;
   font-family: var(--font-display);
@@ -47,6 +47,7 @@
 }
 .property { display: grid; justify-items: start; align-content: start; gap: 5px; min-width: 0; }
 .propertyLabel { color: var(--muted); font-size: .75rem; font-weight: 650; }
+.readOnlyProperty { color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
 .assigneeProperty { margin-left: auto; padding-left: 23px; border-left: 1px solid var(--line); }
 .column, .priority { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .column { color: var(--lane-accent); }
@@ -127,6 +128,17 @@ textarea.textEditor { resize: vertical; line-height: inherit; }
   cursor: pointer;
 }
 .applyDraft:hover { border-color: var(--accent-dark); }
+.reviewNote { margin: 7px 0 0; color: var(--muted); font-size: .85rem; }
+.titleConflict { margin-top: 14px; }
+.titleConflict h3 { margin: 0 0 6px; font-size: .8rem; }
+.reviewText { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.version { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--control-radius); background: var(--surface); }
+.version:only-child { grid-column: 1 / -1; }
+.version h4 { margin: 0; font-size: .8rem; }
+.version p { flex: 1; margin: 0; color: var(--ink-soft); font-size: .9rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.version mark { color: var(--live-ink); background: var(--live-surface); border-radius: 2px; box-decoration-break: clone; }
+.version[data-version="server"] mark { color: var(--accent-dark); background: var(--accent-pale); }
 .empty { color: var(--muted); }
 .feedback { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--detail-gap) 12px; color: var(--muted); font-size: .8rem; }
 .error { color: var(--danger); }
@@ -149,4 +161,5 @@ textarea.textEditor { resize: vertical; line-height: inherit; }
   .subheader { column-gap: 18px; }
   .assigneeProperty { flex-basis: 100%; margin-left: 0; padding-left: 0; border-left: 0; }
   .assigneePopover { left: 0; right: auto; }
+  .comparison { grid-template-columns: minmax(0, 1fr); }
 }

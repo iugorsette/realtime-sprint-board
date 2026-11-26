@@ -12,3 +12,6 @@
 .status, .error { display: block; margin: 6px 2px 0; font-size: .8rem; }
 .status { color: var(--muted); }
 .error { color: var(--danger); }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.actions button { padding: 4px 8px; border: 1px solid var(--line); border-radius: var(--control-radius); background: var(--surface); cursor: pointer; }
+.actions button:hover { background: var(--surface-muted); }

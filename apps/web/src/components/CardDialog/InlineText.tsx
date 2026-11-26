@@ -5,7 +5,7 @@ import styles from './CardDialog.module.css';
 type Draft = { value: string; previous: string };
 type SaveState = { status: 'saving' } | Exclude<CardEditResult, { status: 'saved' }>;
 
-export function InlineText({ label, value, empty, multiline = false, disabled, heading, onSave }: {
+export function InlineText({ label, value, empty, multiline = false, disabled, heading, onSave, onDiscard, onWorkOffline }: {
   label: string;
   value: string;
   empty?: string;
@@ -13,6 +13,8 @@ export function InlineText({ label, value, empty, multiline = false, disabled, h
   disabled: boolean;
   heading?: RefObject<HTMLHeadingElement | null>;
   onSave: (value: string, previous: string) => Promise<CardEditResult>;
+  onDiscard: (value: string) => void;
+  onWorkOffline: () => Promise<boolean>;
 }) {
   const [draft, setDraft] = useState<Draft>();
   const [saveState, setSaveState] = useState<SaveState>();
@@ -36,6 +38,11 @@ export function InlineText({ label, value, empty, multiline = false, disabled, h
     setDraft(undefined);
   }
 
+  function discardDraft() {
+    if (draft && saveState?.status === 'error' && saveState.offlineAvailable) onDiscard(draft.value.trim());
+    closeDraft();
+  }
+
   async function save(previous: string) {
     if (!draft) return;
     const next = draft.value.trim();
@@ -54,7 +61,7 @@ export function InlineText({ label, value, empty, multiline = false, disabled, h
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
-      if (!saving) closeDraft();
+      if (!saving) discardDraft();
     } else if (event.key === 'Enter' && (!multiline || event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       if (draft && !saveState) void save(draft.previous);
@@ -101,7 +108,7 @@ export function InlineText({ label, value, empty, multiline = false, disabled, h
             </div>
           )}
           <div className={styles.draftActions}>
-            <button type="button" className={styles.secondary} onClick={closeDraft}>
+            <button type="button" className={styles.secondary} onClick={discardDraft}>
               {fieldChanged ? 'Keep current' : 'Discard draft'}
             </button>
             <button type="button" className={styles.applyDraft} disabled={disabled}
@@ -111,6 +118,11 @@ export function InlineText({ label, value, empty, multiline = false, disabled, h
               }}>
               {fieldChanged ? 'Apply my draft' : 'Retry save'}
             </button>
+            {saveState.status === 'error' && saveState.offlineAvailable && (
+              <button type="button" className={styles.secondary} onClick={async () => {
+                if (await onWorkOffline()) closeDraft();
+              }}>Keep editing offline</button>
+            )}
           </div>
         </div>
       )}

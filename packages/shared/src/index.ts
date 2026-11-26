@@ -40,7 +40,10 @@ export const boardSchema = z.object({
   columns: z.array(columnSchema),
   assignees: z.array(assigneeSchema),
 });
-export const createCardSchema = cardFields.extend({ columnId: idSchema }).strict();
+export const createCardSchema = cardFields.extend({
+  id: z.uuid().transform((id) => id.toLowerCase()).optional(),
+  columnId: idSchema,
+}).strict();
 export const updateCardSchema = cardFields.extend({ expectedVersion: versionSchema }).strict();
 export const moveCardSchema = z.strictObject({
   targetColumnId: idSchema,

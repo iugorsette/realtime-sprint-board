@@ -12,6 +12,10 @@ Search filters the board by title and description without regard to case or acce
 
 Preferences apply to the current browser. Choose Small, Medium, or Large text and optionally show full card descriptions. The filters dialog is always available on mobile and can replace the filter controls on desktop. Search stays in the toolbar.
 
-If the saved title or description changes while a person is editing it, the open card keeps their draft and shows the current saved text. They can keep the current text or explicitly apply their draft. If the field changes again before that write, the person reviews the new value before applying the draft again. A failed save also keeps the draft available to retry while the card stays open.
+If the saved title or description changes while a person is editing it, the open card keeps their draft and shows the current saved text. They can keep the current text or explicitly apply their draft. If the field changes again before that write, the person reviews the new value before applying the draft again.
+
+The sync control can pause syncing for this browser. A connection failure during card creation or a text save keeps the submitted change locally and offers a retry or **Keep editing offline**. Entering offline mode is explicit. Offline, people can create cards and edit titles and descriptions. Those changes appear on the board with an alert icon that shows **Pending sync** on hover or keyboard focus and survive reopening the app on the same browser and origin. The production build can also reopen without a connection after its assets and a board snapshot have been cached.
+
+**Resume sync** fetches the current board and sends pending changes. Changes to different fields can coexist. When both sides change the same field, the card opens for review. The affected fields show the two values with changed text highlighted, and the other fields appear in their usual positions. Other changes can sync while conflicts wait for review. If a card was deleted, the person can discard the draft or save it as a new card.
 
 The Add tag button sits before the selected tags. Tag suggestions wrap across horizontal rows in a floating panel that can extend past the open card's edge. The card has no internal scrollbar, and tall cards scroll at the viewport edge.

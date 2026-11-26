@@ -21,8 +21,18 @@ model Board {
   revision  Int        @default(0)
   columns   Column[]
   assignees Assignee[]
+  creations CardCreation[]
 
   @@map("boards")
+}
+
+model CardCreation {
+  id      String @id @db.Uuid
+  boardId String @map("board_id")
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([boardId])
+  @@map("card_creations")
 }
 
 model Column {

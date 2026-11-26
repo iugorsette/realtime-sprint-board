@@ -136,6 +136,23 @@ it('saves, moves, and clears multiple assignees without duplicate assignments', 
   expect((await snapshot()).columns[1].cards[0].assigneeIds).toEqual([]);
 });
 
+it('replays a client-generated creation ID without duplicating or resurrecting the card', async () => {
+  const id = randomUUID();
+  const body = { ...fields, id, columnId: first };
+  const invalid = await request('/cards', 'POST', { ...body, assigneeIds: [externalActor] });
+  expect(invalid.status).toBe(400);
+
+  const responses = await Promise.all([request('/cards', 'POST', body), request('/cards', 'POST', body)]);
+  expect(responses.map(({ status }) => status)).toEqual([201, 201]);
+  const results = await Promise.all(responses.map((response) => response.json() as Promise<{ change: BoardChange | null }>));
+  expect(results.filter(({ change }) => change)).toHaveLength(1);
+  expect(await snapshot()).toMatchObject({ revision: 1, columns: [{ cards: [{ id }] }, { cards: [] }] });
+
+  expect((await request(`/cards/${id}?expectedVersion=1`, 'DELETE')).status).toBe(200);
+  expect(await (await request('/cards', 'POST', body)).json()).toEqual({ change: null });
+  expect(await snapshot()).toMatchObject({ revision: 2, columns: [{ cards: [] }, { cards: [] }] });
+});
+
 it('accepts only one concurrent write against a version', async () => {
   const card = await create();
   const responses = await Promise.all([

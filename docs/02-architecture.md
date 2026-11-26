@@ -9,7 +9,7 @@ Card contracts carry assignee IDs in an array. PostgreSQL stores assignments in 
 | Operation | Contract |
 | --- | --- |
 | GET /boards/:id | Consistent snapshot with board revision, assignees, ordered columns and cards |
-| POST /cards | `columnId` and card fields, returns the committed change |
+| POST /cards | `columnId`, card fields, and optional client-generated UUID `id`. Returns the committed change or null when replaying an accepted ID |
 | PATCH /cards/:id | Card fields and `expectedVersion`, returns the committed change |
 | PATCH /cards/:id/move | `targetColumnId`, `beforeCardId`, `expectedVersion`, returns the change or null for a no-op |
 | DELETE /cards/:id | `expectedVersion` query parameter, returns the committed deletion |
@@ -33,3 +33,9 @@ The card details stay open during editing. A queue sends each field change again
 The full-viewport card dialog handles scrolling for tall content. The card surface grows with its contents. The compact tag picker places its button or input before the selected chips in the layout and tab order, and caps the width of the control at 18 rem. It anchors a wrapping panel of suggestions to the input outside the card layout and can flip the panel above the input on short viewports.
 
 The browser stores presentation preferences in local storage. Filter state and the suggestions derived from the board are local to the current view.
+
+Browser storage holds the last committed board snapshot and a queue for submitted creates and text edits. A write enters the queue before its first network attempt. Web Locks serialize queue writes and replays across tabs on the same origin. While paused, a projection applies the pending changes over the cached server snapshot. The production service worker caches the built shell and assets so a previously loaded board can reopen offline.
+
+On resume, the client reads an authoritative snapshot and uses the latest card version for writes. It compares a queued text value and its original value with the server field to recognize a previous success or surface a conflict. Replay acknowledges entries individually. Create receipts persist the client UUID in the same transaction as the card and board revision. The receipt survives card deletion so a lost response cannot produce a duplicate card or resurrect a deleted one.
+
+Conflict review reuses the card dialog and shows the current snapshot as card context. Each affected field compares its local and server value, while the resolution handler still checks the exact value shown during review. Deleted cards use the snapshot stored with the draft.

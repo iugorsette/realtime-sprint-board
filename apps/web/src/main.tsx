@@ -16,3 +16,7 @@ if (root) {
     </QueryClientProvider>,
   );
 }
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}offline-worker.js`).catch(() => undefined);
+}

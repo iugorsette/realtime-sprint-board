@@ -28,6 +28,12 @@ The PostgreSQL volume keeps your changes across restarts. The seed skips an exis
 2. Save in the first tab with Ctrl or Command plus Enter, then save in the second tab. The second tab keeps your draft and shows the saved description.
 3. Choose **Keep current** to discard the draft or **Apply my draft** to save it. Watch the card update in the other tab when you apply it.
 
+### Work offline
+
+Open **Live sync** and choose **Work offline**. Create cards and edit titles and descriptions. Changes stay in this browser, and **Resume sync** sends them once you are connected. Review a conflict when the same field changed on the server.
+
+To test reopening without a connection, run `pnpm build` and open `pnpm --filter @board/web exec vite preview` while the API is running. Load the board once on that origin so the browser can cache the app and the board. Close and reopen the preview URL while offline to verify pending changes survive.
+
 ## Verify
 
 ```sh

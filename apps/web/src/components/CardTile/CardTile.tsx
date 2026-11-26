@@ -1,4 +1,5 @@
 import { memo, type ComponentPropsWithRef } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import type { Assignee, Card } from '@board/shared';
 import { tagTone } from '../../styles/tagTone';
 import styles from './CardTile.module.css';
@@ -14,9 +15,10 @@ export function Avatar({ person }: { person: Assignee }) {
   return <span className={styles.avatar} data-color={color} title={person.name} aria-label={person.name}>{person.initials}</span>;
 }
 
-export const CardTile = memo(function CardTile({ card, assignees }: {
+export const CardTile = memo(function CardTile({ card, assignees, pendingTooltipId }: {
   card: Card;
   assignees: Map<string, Assignee>;
+  pendingTooltipId?: string;
 }) {
   const people = card.assigneeIds.flatMap((id) => {
     const person = assignees.get(id);
@@ -35,6 +37,12 @@ export const CardTile = memo(function CardTile({ card, assignees }: {
         <span className={styles.priority} data-priority={card.priority}>
           <span aria-hidden="true" className={styles.priorityDot} />{priorityNames[card.priority]}
         </span>
+        {pendingTooltipId && (
+          <span className={styles.pendingSync}>
+            <TriangleAlert size={13} aria-hidden="true" />
+            <span id={pendingTooltipId} role="tooltip" className={styles.syncTooltip}>Pending sync</span>
+          </span>
+        )}
         {firstTag && (
           <span className={styles.tags}>
             <span className={styles.tag} data-tag-tone={tagTone(firstTag)} title={firstTag}>{firstTag}</span>

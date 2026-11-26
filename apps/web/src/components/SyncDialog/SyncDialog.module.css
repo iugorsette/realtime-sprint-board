@@ -1,0 +1,4 @@
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.actions button { padding: 6px 9px; border: 1px solid var(--line); border-radius: var(--control-radius); background: var(--surface); cursor: pointer; font-size: .85rem; }
+.actions button:hover { border-color: var(--accent); background: var(--accent-pale); }
+.error { color: var(--danger); }

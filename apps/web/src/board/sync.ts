@@ -21,7 +21,7 @@ export class BoardSync {
   private active = false;
   readonly options;
 
-  constructor(private readonly client: QueryClient, boardId: string) {
+  constructor(private readonly client: QueryClient, boardId: string, private readonly onSnapshot?: (board: Board) => void) {
     this.options = boardOptions(boardId);
   }
 
@@ -58,7 +58,8 @@ export class BoardSync {
     this.refreshRequested = false;
     this.lastGapRefreshRevision = revision;
     this.refresh = this.client.fetchQuery(this.options).then(
-      () => {
+      (board) => {
+        this.onSnapshot?.(board);
         this.refresh = undefined;
         this.drain();
       },
@@ -74,7 +75,10 @@ export class BoardSync {
     if (!current) return;
     const { board, remaining } = reconcileChanges(current, this.events);
     this.events = remaining;
-    if (board !== current) this.write(board);
+    if (board !== current) {
+      this.write(board);
+      this.onSnapshot?.(board);
+    }
     return board;
   }
 

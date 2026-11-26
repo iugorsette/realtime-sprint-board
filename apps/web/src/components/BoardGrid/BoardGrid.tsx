@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
   closestCenter, DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin,
   useDraggable, useDroppable, useSensor, useSensors,
@@ -17,29 +17,36 @@ const instructions: ScreenReaderInstructions = {
 
 const readSlot = (data: { current?: { slot?: Slot } } | undefined) => data?.current?.slot;
 
-function DragCard({ card, assignees, onOpen, pending }: {
+function DragCard({ card, assignees, onOpen, pending, pendingSync }: {
   card: Card;
   assignees: Map<string, Assignee>;
   onOpen: (card: Card) => void;
   pending: boolean;
+  pendingSync: boolean;
 }) {
   const slot = { columnId: card.columnId, beforeCardId: card.id };
   const drop = useDroppable({ id: slotId(slot), data: { slot } });
   const drag = useDraggable({ id: card.id, disabled: pending, data: { card, slot } });
+  const tooltipId = useId();
+  const [tooltipDismissed, setTooltipDismissed] = useState(false);
+  const describedBy = [drag.attributes['aria-describedby'], pendingSync && tooltipId].filter(Boolean).join(' ');
   return (
     <li ref={drop.setNodeRef} className={styles.slot} data-over={drop.isOver && !drag.isDragging || undefined}>
-      <CardSurface ref={drag.setNodeRef} className={styles.card} data-dragging={drag.isDragging || undefined}>
+      <CardSurface ref={drag.setNodeRef} className={styles.card} data-dragging={drag.isDragging || undefined}
+        data-tooltip-dismissed={tooltipDismissed || undefined} onMouseLeave={() => setTooltipDismissed(false)}>
         <button
           type="button" ref={drag.setActivatorNodeRef} className={styles.openCard}
           {...drag.attributes} {...drag.listeners}
-          aria-label={card.title} aria-disabled={undefined} data-drag-card={card.id}
+          aria-label={card.title} aria-describedby={describedBy || undefined} aria-disabled={undefined} data-drag-card={card.id}
           onClick={() => onOpen(card)}
+          onBlur={() => setTooltipDismissed(false)}
           onKeyDown={(event) => {
+            if (pendingSync && event.key === 'Escape') setTooltipDismissed(true);
             if (pending && event.code === 'Space') event.preventDefault();
             else drag.listeners?.onKeyDown?.(event);
           }}
         >
-          <CardTile card={card} assignees={assignees} />
+          <CardTile card={card} assignees={assignees} pendingTooltipId={pendingSync ? tooltipId : undefined} />
         </button>
       </CardSurface>
     </li>
@@ -60,12 +67,14 @@ function focusHandle(ref: RefObject<HTMLDivElement | null>, cardId: string) {
   });
 }
 
-export function BoardGrid({ columns, columnTotals, assignees, pending, onOpen, onCreate, onMove, draft }: {
+export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisabled, pendingCards, onOpen, onCreate, onMove, draft }: {
   columns: Column[];
   columnTotals: ReadonlyMap<string, number>;
   draft?: { columnId: string; content: ReactNode };
   assignees: Map<string, Assignee>;
   pending: boolean;
+  dragDisabled: boolean;
+  pendingCards: ReadonlySet<string>;
   onOpen: (card: Card) => void;
   onCreate: (columnId: string) => void;
   onMove: (card: Card, input: MoveCard) => Promise<void>;
@@ -127,7 +136,7 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, onOpen, o
         const target = moveTarget(columns, String(active.id), readSlot(over?.data));
         setActiveCard(undefined);
         const keyboard = activatorEvent instanceof KeyboardEvent;
-        if (card && target) {
+        if (card && target && !dragDisabled) {
           void onMove(card, {
             targetColumnId: target.columnId, beforeCardId: target.beforeCardId, expectedVersion: card.version,
           }).finally(() => {
@@ -159,7 +168,7 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, onOpen, o
               <ul className={styles.cards}>
                 {column.cards.map((card) => (
                   <DragCard key={card.id} card={card} assignees={assignees}
-                    onOpen={onOpen} pending={pending} />
+                    onOpen={onOpen} pending={pending || dragDisabled || pendingCards.has(card.id)} pendingSync={pendingCards.has(card.id)} />
                 ))}
                 {draft?.columnId === column.id && <li className={styles.slot}>{draft.content}</li>}
                 <ColumnEnd columnId={column.id} message={emptyMessage} />

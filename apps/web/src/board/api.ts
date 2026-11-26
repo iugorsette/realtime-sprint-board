@@ -16,7 +16,10 @@ async function request(path: string, init?: RequestInit) {
 }
 
 export async function fetchBoard(boardId: string, signal?: AbortSignal) {
-  return boardSchema.parse(await request(`/boards/${encodeURIComponent(boardId)}`, { signal }));
+  const timeout = AbortSignal.timeout(10000);
+  return boardSchema.parse(await request(`/boards/${encodeURIComponent(boardId)}`, {
+    signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+  }));
 }
 
 export type CardAction =

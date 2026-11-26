@@ -7,7 +7,10 @@
 .logo svg { transform: rotate(7deg); }
 .brandName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topRight { gap: 13px; flex: none; }
-.connection { gap: 5px; padding: 5px 9px; border: 1px solid var(--masthead-line); border-radius: 999px; color: var(--masthead-muted); font-size: .76rem; font-weight: 680; white-space: nowrap; }
+.connection { gap: 5px; padding: 5px 9px; border: 1px solid var(--masthead-line); border-radius: 999px; background: transparent; color: var(--masthead-muted); font-size: .76rem; font-weight: 680; cursor: pointer; text-align: left; }
+.connection:hover { border-color: currentColor; }
+.connection:focus-visible { outline-color: var(--brand-mark); }
+.connection svg { flex: none; }
 .connection[data-connection="live"] { color: var(--live-ink); background: var(--live-surface); border-color: transparent; }
 .connection[data-connection="offline"] { color: var(--warning-ink); background: var(--warning-surface); border-color: transparent; }
 .people { padding-left: 12px; border-left: 1px solid var(--masthead-line); }

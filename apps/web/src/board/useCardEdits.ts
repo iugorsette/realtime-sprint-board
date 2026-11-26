@@ -4,12 +4,13 @@ import { updateCardSchema, type Board, type BoardChange, type Card } from '@boar
 import { RequestError, type CardAction } from './api';
 import { applyCardEdit, type CardEdit } from './cardEdits';
 import { boardOptions } from './sync';
+import { isConnectionError } from './offline';
 
 type SaveCard = (action: CardAction) => Promise<BoardChange | null>;
 export type CardEditResult =
   | { status: 'saved' }
-  | { status: 'conflict' }
-  | { status: 'error'; message: string };
+  | { status: 'conflict'; deleted?: boolean }
+  | { status: 'error'; message: string; offlineAvailable?: boolean };
 
 export function useCardEdits(boardId: string, card: Card, save: SaveCard) {
   const client = useQueryClient();
@@ -25,6 +26,7 @@ export function useCardEdits(boardId: string, card: Card, save: SaveCard) {
       try {
         const board: Board | undefined = client.getQueryData(boardOptions(boardId).queryKey);
         const cached = board?.columns.flatMap(({ cards }) => cards).find(({ id }) => id === card.id);
+        if (!cached && 'previous' in change) return { status: 'conflict', deleted: true };
         if (!cached) throw new Error('This card is no longer available.');
         const lastSaved = acknowledged.current;
         const base = lastSaved && lastSaved.version > cached.version ? lastSaved : cached;
@@ -51,12 +53,12 @@ export function useCardEdits(boardId: string, card: Card, save: SaveCard) {
         return { status: 'saved' };
       } catch (error) {
         const conflict = error instanceof RequestError && error.status === 409;
-        if (conflict && 'previous' in change) return { status: 'conflict' };
+        if (conflict && 'previous' in change) return { status: 'conflict', deleted: error.conflict?.card === null };
         const message = conflict
           ? 'This card changed in another tab. Try the field edit again.'
           : error instanceof Error ? error.message : 'Unable to save this change.';
         if (!('previous' in change)) setError(message);
-        return { status: 'error', message };
+        return { status: 'error', message, offlineAvailable: isConnectionError(error) };
       } finally {
         setQueued((current) => current.filter((item) => item !== change));
       }

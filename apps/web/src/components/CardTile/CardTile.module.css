@@ -114,3 +114,41 @@
   overflow: visible;
   white-space: pre-wrap;
 }
+.pendingSync {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  flex: none;
+  border-radius: 50%;
+  color: var(--warning-ink);
+  background: var(--warning-surface);
+}
+.syncTooltip {
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-start: 0;
+  z-index: 3;
+  visibility: hidden;
+  padding: 5px 8px;
+  border: 1px solid var(--masthead-line);
+  border-radius: 6px;
+  color: var(--masthead-text);
+  background: var(--masthead);
+  box-shadow: var(--card-shadow);
+  font-size: .72rem;
+  font-weight: 650;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.syncTooltip::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 7px;
+  border: 4px solid transparent;
+  border-top-color: var(--masthead);
+}
+.surface:not([data-tooltip-dismissed]) .pendingSync:hover .syncTooltip,
+.surface:not([data-tooltip-dismissed]) button:focus-visible .syncTooltip { visibility: visible; }

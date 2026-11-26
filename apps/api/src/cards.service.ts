@@ -90,6 +90,16 @@ export class CardsService {
       const column = await tx.column.findUnique({ where: { id: input.columnId } });
       if (!column) throw new NotFoundException('Column not found');
       await this.lockBoard(tx, column.boardId);
+      if (input.id) {
+        const { count } = await tx.cardCreation.createMany({
+          data: { id: input.id, boardId: column.boardId }, skipDuplicates: true,
+        });
+        if (!count) {
+          const receipt = await tx.cardCreation.findUnique({ where: { id: input.id } });
+          if (receipt?.boardId !== column.boardId) throw new BadRequestException('Card ID belongs to another board');
+          return null;
+        }
+      }
       await this.verifyAssignees(tx, column.boardId, assigneeIds);
 
       const last = await tx.card.findFirst({

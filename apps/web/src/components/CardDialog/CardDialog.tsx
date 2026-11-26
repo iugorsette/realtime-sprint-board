@@ -2,12 +2,14 @@ import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from
 import { Plus, X } from 'lucide-react';
 import { prioritySchema, type Board, type BoardChange, type Card } from '@board/shared';
 import { RequestError, type CardAction } from '../../board/api';
-import { useCardEdits } from '../../board/useCardEdits';
+import { useCardEdits, type CardEditResult } from '../../board/useCardEdits';
+import type { TextChange, TextEdit, TextField } from '../../board/offline';
 import { ChoiceMenu } from '../ChoiceMenu/ChoiceMenu';
 import { AssigneePicker } from '../AssigneePicker/AssigneePicker';
 import { Avatar, CardSurface, priorityNames } from '../CardTile/CardTile';
 import { TagPicker } from '../TagPicker/TagPicker';
 import { InlineText } from './InlineText';
+import { ConflictField, type ResolveConflict } from './ConflictField';
 import styles from './CardDialog.module.css';
 
 function closeDisclosureOnBlur({ currentTarget, relatedTarget }: FocusEvent<HTMLDetailsElement>) {
@@ -22,13 +24,31 @@ function closeDisclosureOnEscape(event: KeyboardEvent<HTMLDetailsElement>) {
   event.currentTarget.querySelector('summary')?.focus();
 }
 
-export function CardDialog({ board, card, availableTags, pending, onClose, onSave }: {
+type CardReview = {
+  changes: TextChange[];
+  deleted: boolean;
+  notice: string;
+  onResolve: ResolveConflict;
+  onRecoverDeleted: (change: TextChange) => Promise<void>;
+  onNext?: () => void;
+  onSyncSettings: () => void;
+};
+
+export function CardDialog({ board, card, availableTags, pending, offline, syncing, review, onReview, onClose, onSave,
+  onSaveText, onDiscardText, onWorkOffline }: {
   board: Board;
   card: Card;
   availableTags: string[];
   pending: boolean;
+  offline: boolean;
+  syncing: boolean;
+  review?: CardReview;
+  onReview?: () => void;
   onClose: () => void;
   onSave: (action: CardAction) => Promise<BoardChange | null>;
+  onSaveText: (card: Card, change: TextEdit, send: () => Promise<CardEditResult>) => Promise<CardEditResult>;
+  onDiscardText: (card: Card, field: TextField, value: string) => void;
+  onWorkOffline: () => Promise<boolean>;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -39,8 +59,24 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
   const { card: displayed, edit, saving, error } = useCardEdits(board.id, card, onSave);
   const column = board.columns.find(({ id }) => id === displayed.columnId);
   const assigned = board.assignees.filter(({ id }) => displayed.assigneeIds.includes(id));
-  const busy = pending || saving;
+  const busy = pending || saving || syncing;
   const busyElsewhere = pending && !saving;
+  const propertiesDisabled = offline || syncing || busyElsewhere || Boolean(review);
+  const titleConflict = review?.changes.find(({ field }) => field === 'title');
+  const descriptionConflict = review?.changes.find(({ field }) => field === 'description');
+
+  function textProps(field: TextField) {
+    return {
+      value: card[field],
+      disabled: busyElsewhere || syncing || Boolean(onReview),
+      onSave: (value: string, previous: string) => {
+        const change = { field, value, previous };
+        return onSaveText(card, change, () => edit(change));
+      },
+      onDiscard: (value: string) => onDiscardText(card, field, value),
+      onWorkOffline,
+    };
+  }
 
   useEffect(() => {
     const element = dialog.current;
@@ -53,6 +89,10 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
     if (confirmDelete) cancelDelete.current?.focus({ preventScroll: true });
   }, [confirmDelete]);
 
+  useEffect(() => {
+    if (review && !dialog.current?.contains(document.activeElement)) heading.current?.focus({ preventScroll: true });
+  }, [review]);
+
   function cancelDeletion() {
     setConfirmDelete(false);
     setDeleteError('');
@@ -60,7 +100,7 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
   }
 
   async function deleteCard() {
-    if (busy) return;
+    if (busy || offline) return;
     setDeleteError('');
     try {
       await onSave({ type: 'delete', id: card.id, version: card.version });
@@ -73,7 +113,7 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
   }
 
   function changeList(field: 'tags' | 'assigneeIds', next: string[]) {
-    if (busyElsewhere) return;
+    if (propertiesDisabled) return;
     const current = displayed[field];
     const added = next.find((item) => !current.includes(item));
     const removed = current.find((item) => !next.includes(item));
@@ -91,29 +131,40 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
       <CardSurface className={styles.surface} data-column={column?.id}>
         <header className={styles.header}>
           <div className={styles.titleRow}>
-            <InlineText label="Title" value={card.title} disabled={busyElsewhere} heading={heading}
-              onSave={(value, previous) => edit({ field: 'title', value, previous })} />
+            {review ? <h2 className={styles.titleEditor} ref={heading} tabIndex={-1}>{card.title}</h2>
+              : <InlineText label="Title" heading={heading} {...textProps('title')} />}
             <button type="button" className={styles.icon} aria-label="Close card" disabled={busy} onClick={onClose}>
               <X size={19} aria-hidden="true" />
             </button>
           </div>
+          {review && (
+            <p className={styles.reviewNote}>{review.deleted ? 'This card was deleted on the server.' : 'Review conflicting changes'}</p>
+          )}
+          {review && titleConflict && (
+            <section className={styles.titleConflict}>
+              <h3>Title</h3>
+              <ConflictField change={titleConflict} server={review.deleted ? undefined : card.title}
+                disabled={busy} onResolve={review.onResolve} />
+            </section>
+          )}
           <div className={styles.subheader} role="group" aria-label="Card properties">
             <div className={styles.property}>
               <span className={styles.propertyLabel}>Status</span>
-              <ChoiceMenu label="Status" selected={[displayed.columnId]} disabled={busyElsewhere}
+              <ChoiceMenu label="Status" selected={[displayed.columnId]} disabled={propertiesDisabled}
                 trigger={<span className={styles.column} data-column={column?.id}>{column?.name ?? 'Status'}</span>}
                 options={board.columns.map(({ id, name }) => ({ value: id, label: name, column: id }))}
                 onSelect={(value) => edit({ field: 'columnId', value })} />
             </div>
             <div className={styles.property}>
               <span className={styles.propertyLabel}>Priority</span>
-              <ChoiceMenu label="Priority" selected={[displayed.priority]} disabled={busyElsewhere}
+              <ChoiceMenu label="Priority" selected={[displayed.priority]} disabled={propertiesDisabled}
                 trigger={<span className={styles.priority} data-priority={displayed.priority}>{priorityNames[displayed.priority]}</span>}
                 options={prioritySchema.options.map((value) => ({ value, label: priorityNames[value], priority: value }))}
                 onSelect={(value) => edit({ field: 'priority', value })} />
             </div>
             <div className={`${styles.property} ${styles.assigneeProperty}`}>
               <span className={styles.propertyLabel}>Assignees</span>
+              {propertiesDisabled ? <span className={styles.readOnlyProperty}>{assigned.map(({ name }) => name).join(', ') || 'Unassigned'}</span> :
               <details className={styles.assignees} onBlur={closeDisclosureOnBlur} onKeyDown={closeDisclosureOnEscape}
                 onToggle={({ currentTarget }) => {
                   if (currentTarget.open) currentTarget.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true });
@@ -133,30 +184,45 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
                   <AssigneePicker assignees={board.assignees} value={displayed.assigneeIds}
                     onChange={(ids) => changeList('assigneeIds', ids)} />
                 </div>
-              </details>
+              </details>}
             </div>
           </div>
         </header>
         <div className={styles.details}>
           <section className={styles.description}>
             <h3>Description</h3>
-            <InlineText label="Description" value={card.description} empty="Add a description" multiline
-              disabled={busyElsewhere} onSave={(value, previous) => edit({ field: 'description', value, previous })} />
+            {review ? (
+              descriptionConflict ? <ConflictField change={descriptionConflict} server={review.deleted ? undefined : card.description}
+                disabled={busy} onResolve={review.onResolve} /> : <p className={styles.reviewText}>{card.description || 'No description'}</p>
+            ) : <InlineText label="Description" empty="Add a description" multiline {...textProps('description')} />}
           </section>
           <section className={styles.tags}>
             <h3>Tags</h3>
-            <TagPicker label="Tags" options={availableTags} value={displayed.tags} allowCreate compact
-              onChange={(tags) => changeList('tags', tags)} />
+            {propertiesDisabled ? <span className={styles.readOnlyProperty}>{displayed.tags.join(', ') || 'No tags'}</span> :
+              <TagPicker label="Tags" options={availableTags} value={displayed.tags} allowCreate compact
+                onChange={(tags) => changeList('tags', tags)} />}
           </section>
         </div>
-        {(saving || error || deleteError) && (
+        {(saving || error || deleteError || review?.notice || (review && syncing)) && (
           <div className={styles.feedback}>
             {saving && <span role="status">Saving changes…</span>}
-            {(deleteError || error) && <span className={styles.error} role="alert">{deleteError || error}</span>}
+            {review && syncing && <span role="status">Syncing changes…</span>}
+            {(deleteError || error || review?.notice) && <span className={styles.error} role="alert">{deleteError || error || review?.notice}</span>}
           </div>
         )}
         <footer className={styles.footer}>
-          {confirmDelete ? (
+          {review ? (
+            <>
+              <button type="button" className={styles.secondary} disabled={busy} onClick={review.onSyncSettings}>Sync settings</button>
+              {review.onNext && <button type="button" className={styles.secondary} disabled={busy} onClick={review.onNext}>Next card</button>}
+              {review.deleted && (
+                <button type="button" className={styles.applyDraft} disabled={busy}
+                  onClick={() => void review.onRecoverDeleted(review.changes[0])}>Save as new card</button>
+              )}
+            </>
+          ) : onReview ? (
+            <button type="button" className={styles.applyDraft} disabled={busy} onClick={onReview}>Review changes</button>
+          ) : offline ? <p>Titles and descriptions can be edited offline.</p> : confirmDelete ? (
             <>
               <p>Delete this card?</p>
               <button ref={cancelDelete} type="button" className={styles.secondary} disabled={busy}
