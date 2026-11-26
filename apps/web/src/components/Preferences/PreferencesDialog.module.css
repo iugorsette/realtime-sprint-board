@@ -1,0 +1,16 @@
+.fontSize { margin: 18px 0 12px; padding: 0; border: 0; min-width: 0; }
+.fontSize legend { padding: 0; margin-bottom: 7px; font-weight: 650; font-size: .85rem; }
+.fontSize > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.fontSize label { position: relative; display: grid; grid-template-rows: 1fr auto; place-items: center; gap: 2px; padding: 5px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; font-size: .8rem; }
+.fontSize label:has(input:checked) { background: var(--accent-pale); border-color: var(--accent); color: var(--accent-dark); }
+.fontSize label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fontSize input, .toggle input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.sample { font-family: var(--font-display); font-size: 1.08rem; line-height: 1.2; }
+.fontSize label[data-size="110"] .sample { font-size: 1.35rem; }
+.fontSize label[data-size="125"] .sample { font-size: 1.62rem; }
+.toggle { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); font-size: .86rem; cursor: pointer; }
+.track { display: flex; align-items: center; flex: none; width: 38px; height: 22px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-muted); }
+.track::after { content: ''; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); }
+.toggle input:checked + .track { justify-content: flex-end; border-color: var(--live-ink); background: var(--live-ink); }
+.toggle input:checked + .track::after { background: var(--surface); }
+.toggle input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }

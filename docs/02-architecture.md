@@ -29,3 +29,5 @@ The board row lock serializes writes at demo scale. Read snapshots use repeatabl
 TanStack Query owns the board snapshot. Local state owns filter selections, inline drafts and pending field edits, the active drag and connection status. Filter projections retain card references. Draggable card wrappers subscribe to drag context independently of presentational card bodies.
 
 The card details stay open during editing. A queue sends each field change against the latest known card version and applies list additions and removals individually. Status selection uses the same version-checked move endpoint as drag and drop. Pending field changes render immediately and failed writes revert through the queue and query cache.
+
+The browser stores presentation preferences in local storage. Filter state and the suggestions derived from the board are local to the current view.

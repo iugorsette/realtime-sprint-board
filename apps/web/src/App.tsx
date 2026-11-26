@@ -1,7 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Columns3, Radio, X } from 'lucide-react';
+import { Columns3, Radio, Settings, X } from 'lucide-react';
 import { DEMO_BOARD_ID, type Card, type MoveCard } from '@board/shared';
 import { useBoard } from './board/useBoard';
+import { usePreferences } from './board/preferences';
+import { PreferencesDialog } from './components/Preferences/PreferencesDialog';
 import { filterColumns } from './board/model';
 import { Avatar } from './components/CardTile/CardTile';
 import { BoardGrid } from './components/BoardGrid/BoardGrid';
@@ -15,6 +17,8 @@ const connectionLabels = { connecting: 'Connecting', live: 'Live sync', offline:
 export function App() {
   const { query, mutation, connection, retry } = useBoard(DEMO_BOARD_ID);
   const { data: board } = query;
+  const { preferences, setPreferences } = usePreferences();
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [filters, setFilters] = useState(emptyFilters);
   const [selectedCardId, setSelectedCardId] = useState<string>();
   const [draftColumn, setDraftColumn] = useState<string>();
@@ -47,7 +51,7 @@ export function App() {
     <>
       <header className={styles.top}>
         <div className={styles.topInner}>
-          <h1 className={styles.brand}><span className={styles.logo}><Columns3 size={18} aria-hidden="true" /></span>{board?.name ?? 'Sprint Board'}</h1>
+          <h1 className={styles.brand}><span className={styles.logo}><Columns3 size={18} aria-hidden="true" /></span><span className={styles.brandName}>{board?.name ?? 'Sprint Board'}</span></h1>
           <div className={styles.topRight}>
             <span className={styles.connection} data-connection={connection} role="status">
               <Radio size={15} aria-hidden="true" /> {connectionLabels[connection]}
@@ -57,15 +61,18 @@ export function App() {
                 {board.assignees.map((person) => <Avatar key={person.id} person={person} />)}
               </div>
             )}
+            <button type="button" className={styles.preferences} aria-label="Preferences"
+              onClick={() => setPreferencesOpen(true)}><Settings size={18} aria-hidden="true" /></button>
           </div>
         </div>
       </header>
+      {preferencesOpen && <PreferencesDialog value={preferences} onChange={setPreferences} onClose={() => setPreferencesOpen(false)} />}
       <main className={styles.main}>
         {board ? (
           <>
             <div className={styles.toolbar}>
               <FiltersBar filters={filters} onChange={setFilters} assignees={board.assignees} tags={tags}
-                columns={columns} filtersInDialog={false} onOpenCard={openCard} />
+                columns={columns} filtersInDialog={preferences.filtersInDialog} onOpenCard={openCard} />
               <div className={styles.metrics}>
                 <span>{shown !== total ? `${shown} of ${total} cards` : `${total} ${total === 1 ? 'card' : 'cards'}`}</span>
                 <span className={styles.progress}><progress max={total || 1} value={done} aria-label="Completed cards" />{done} done</span>

@@ -12,3 +12,6 @@ button, textarea, input, select { font: inherit; color: inherit; }
 button:disabled { opacity: .6; cursor: default; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 ::selection { background: var(--accent-pale); color: var(--accent-dark); }
+
+:root[data-font-size="110"] { font-size: 110%; }
+:root[data-font-size="125"] { font-size: 125%; }

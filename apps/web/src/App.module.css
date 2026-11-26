@@ -5,7 +5,8 @@
 .brand { margin: 0; gap: 11px; font-family: var(--font-display); font-size: clamp(1.42rem, 3vw, 1.75rem); font-weight: 700; letter-spacing: -.038em; }
 .logo { display: grid; place-items: center; flex: none; width: 33px; height: 33px; border-radius: 11px 13px 10px 7px; color: var(--masthead); background: var(--brand-mark); transform: rotate(-7deg); }
 .logo svg { transform: rotate(7deg); }
-.topRight { gap: 13px; }
+.brandName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topRight { gap: 13px; flex: none; }
 .connection { gap: 5px; padding: 5px 9px; border: 1px solid var(--masthead-line); border-radius: 999px; color: var(--masthead-muted); font-size: .76rem; font-weight: 680; white-space: nowrap; }
 .connection[data-connection="live"] { color: var(--live-ink); background: var(--live-surface); border-color: transparent; }
 .connection[data-connection="offline"] { color: var(--warning-ink); background: var(--warning-surface); border-color: transparent; }
@@ -28,4 +29,13 @@
   .topInner { min-height: 60px; }
   .toolbar { padding-bottom: 10px; }
   .main { padding-top: 13px; }
+}
+
+.preferences { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--masthead-line); border-radius: var(--control-radius); background: transparent; color: var(--masthead-text); cursor: pointer; }
+.preferences:hover { background: var(--masthead-line); }
+.preferences:focus-visible { outline-color: var(--brand-mark); }
+@media (max-width: 570px) {
+  .brand { min-width: 0; white-space: nowrap; font-size: clamp(1rem, 5vw, 1.4rem); }
+  .topRight { gap: 5px; }
+  .connection { padding-inline: 5px; }
 }

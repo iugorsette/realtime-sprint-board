@@ -106,3 +106,9 @@
 .avatar[data-color="1"] { background: #cce4d3; color: #285a44; }
 .avatar[data-color="2"] { background: #efd1ad; color: #753f1a; }
 .avatar[data-color="3"] { background: #d8e3f1; color: #385379; }
+
+:global(html[data-full-descriptions="true"]) .description {
+  display: block;
+  overflow: visible;
+  white-space: pre-wrap;
+}
