@@ -1,4 +1,4 @@
-import { useRef, useState, type RefObject } from 'react';
+import { useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
   closestCenter, DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin,
   useDraggable, useDroppable, useSensor, useSensors,
@@ -60,8 +60,9 @@ function focusHandle(ref: RefObject<HTMLDivElement | null>, cardId: string) {
   });
 }
 
-export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMove }: {
+export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMove, draft }: {
   columns: Column[];
+  draft?: { columnId: string; content: ReactNode };
   assignees: Map<string, Assignee>;
   pending: boolean;
   onOpen: (card: Card) => void;
@@ -144,14 +145,15 @@ export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMov
                 <h2 id={`column-${column.id}`}>{column.name}</h2>
                 <span className={styles.count} aria-label={`${column.cards.length} cards`}>{column.cards.length}</span>
                 <button type="button" onClick={() => onCreate(column.id)} className={styles.add}
-                  aria-label={`Add card to ${column.name}`} disabled={pending}><Plus size={17} aria-hidden="true" /></button>
+                  aria-label={`Add card to ${column.name}`} disabled={pending || Boolean(draft)}><Plus size={17} aria-hidden="true" /></button>
               </div>
               <ul className={styles.cards}>
                 {column.cards.map((card) => (
                   <DragCard key={card.id} card={card} assignee={card.assigneeId ? assignees.get(card.assigneeId) : undefined}
                     onOpen={onOpen} pending={pending} />
                 ))}
-                <ColumnEnd columnId={column.id} empty={column.cards.length === 0} />
+                {draft?.columnId === column.id && <li className={styles.slot}>{draft.content}</li>}
+                <ColumnEnd columnId={column.id} empty={column.cards.length === 0 && draft?.columnId !== column.id} />
               </ul>
             </section>
           );

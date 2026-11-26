@@ -1,0 +1,5 @@
+.card { padding: 12px; }
+.footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 12px; color: var(--muted); font-size: .72rem; }
+.footer button { border: 1px solid var(--line); border-radius: var(--control-radius); padding: 4px 7px; background: var(--surface); cursor: pointer; }
+.footer button:hover { background: var(--surface-muted); }
+.error { margin: 8px 0 0; color: #a83547; font-size: .8rem; }

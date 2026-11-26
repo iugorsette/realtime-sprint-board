@@ -5,7 +5,8 @@ import { useBoard } from './board/useBoard';
 import { filterColumns } from './board/model';
 import { Avatar } from './components/CardTile/CardTile';
 import { BoardGrid } from './components/BoardGrid/BoardGrid';
-import { CardDialog, type Editor } from './components/CardDialog/CardDialog';
+import { CardDialog } from './components/CardDialog/CardDialog';
+import { CardComposer } from './components/CardComposer/CardComposer';
 import { emptyFilters, FiltersBar } from './components/FiltersBar/FiltersBar';
 import styles from './App.module.css';
 
@@ -15,11 +16,11 @@ export function App() {
   const { query, mutation, connection, retry } = useBoard(DEMO_BOARD_ID);
   const { data: board } = query;
   const [filters, setFilters] = useState(emptyFilters);
-  const [editor, setEditor] = useState<Editor>();
+  const [selectedCard, setSelectedCard] = useState<Card>();
+  const [draftColumn, setDraftColumn] = useState<string>();
   const [notice, setNotice] = useState('');
-  const open = useCallback((card: Card) => setEditor({ columnId: card.columnId, card }), []);
-  const create = useCallback((columnId: string) => setEditor({ columnId }), []);
-  const close = useCallback(() => setEditor(undefined), []);
+  const closeCard = useCallback(() => setSelectedCard(undefined), []);
+  const closeDraft = useCallback(() => setDraftColumn(undefined), []);
   const columns = useMemo(() => board ? filterColumns(board.columns, filters) : [], [board, filters]);
   const assignees = useMemo(() => new Map(board?.assignees.map((person) => [person.id, person])), [board?.assignees]);
   const tags = useMemo(() => [...new Set(board?.columns.flatMap((column) => column.cards.flatMap((card) => card.tags)))].sort(), [board?.columns]);
@@ -69,8 +70,17 @@ export function App() {
                 <span className={styles.progress}><progress max={total || 1} value={done} aria-label="Completed cards" />{done} done</span>
               </div>
             </div>
-            <BoardGrid columns={columns} assignees={assignees} pending={mutation.isPending} onOpen={open} onCreate={create} onMove={move} />
-            {editor && <CardDialog board={board} editor={editor} pending={mutation.isPending} onClose={close}
+            <BoardGrid
+              columns={columns} assignees={assignees} pending={mutation.isPending}
+              onOpen={setSelectedCard} onCreate={setDraftColumn} onMove={move}
+              draft={draftColumn ? {
+                columnId: draftColumn,
+                content: <CardComposer columnId={draftColumn} assignees={board.assignees}
+                  pending={mutation.isPending} onClose={closeDraft}
+                  onSave={(input) => mutation.mutateAsync({ type: 'create', input })} />,
+              } : undefined}
+            />
+            {selectedCard && <CardDialog board={board} card={selectedCard} pending={mutation.isPending} onClose={closeCard}
               onSave={(action) => mutation.mutateAsync(action)} />}
           </>
         ) : query.isError ? (
