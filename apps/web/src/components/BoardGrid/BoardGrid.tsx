@@ -7,7 +7,7 @@ import {
 import { Check, Circle, CircleDot, Columns3, LoaderCircle, Plus } from 'lucide-react';
 import type { Assignee, Card, Column, MoveCard } from '@board/shared';
 import { keyboardSlot, moveTarget, slotId, type Slot } from '../../board/drag';
-import { CardTile } from '../CardTile/CardTile';
+import { CardSurface, CardTile } from '../CardTile/CardTile';
 import styles from './BoardGrid.module.css';
 
 const icons = { backlog: Columns3, todo: Circle, 'in-progress': CircleDot, done: Check } as const;
@@ -28,7 +28,7 @@ function DragCard({ card, assignee, onOpen, pending }: {
   const drag = useDraggable({ id: card.id, disabled: pending, data: { card, slot } });
   return (
     <li ref={drop.setNodeRef} className={styles.slot} data-over={drop.isOver && !drag.isDragging || undefined}>
-      <article ref={drag.setNodeRef} className={styles.card} data-dragging={drag.isDragging || undefined}>
+      <CardSurface ref={drag.setNodeRef} className={styles.card} data-dragging={drag.isDragging || undefined}>
         <button
           type="button" ref={drag.setActivatorNodeRef} className={styles.openCard}
           {...drag.attributes} {...drag.listeners}
@@ -41,7 +41,7 @@ function DragCard({ card, assignee, onOpen, pending }: {
         >
           <CardTile card={card} assignee={assignee} />
         </button>
-      </article>
+      </CardSurface>
     </li>
   );
 }
@@ -159,9 +159,9 @@ export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMov
       </div>
       <DragOverlay dropAnimation={null}>
         {activeCard && (
-          <div className={`${styles.card} ${styles.overlay}`} aria-hidden="true">
+          <CardSurface className={styles.overlay} aria-hidden="true">
             <CardTile card={activeCard} assignee={activeCard.assigneeId ? assignees.get(activeCard.assigneeId) : undefined} />
-          </div>
+          </CardSurface>
         )}
       </DragOverlay>
     </DndContext>

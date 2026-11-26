@@ -2,8 +2,8 @@
   width: min(470px, calc(100vw - 30px));
   max-height: calc(100dvh - 32px);
   padding: 0;
-  border: 1px solid var(--line);
-  background: var(--surface);
+  border: 0;
+  background: transparent;
   color: var(--text);
   border-radius: 15px;
   box-shadow: var(--raised-shadow);
@@ -11,13 +11,12 @@
 .dialog::backdrop { background: rgb(26 26 45 / 42%); }
 .header, .footer { padding: 16px 21px; display: flex; align-items: center; gap: 8px; }
 .header { border-bottom: 1px solid var(--line); justify-content: space-between; }
-.header h2 { margin: 0; font-size: 1.15rem; }
+.header h2 { margin: 0; font-size: 1.15rem; overflow-wrap: anywhere; }
+.column { display: block; color: var(--muted); font-size: .75rem; margin-bottom: 4px; }
 .body { padding: 17px 21px; }
-.fields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 13px; }
-.fields label { display: grid; gap: 5px; font-size: .8rem; font-weight: 650; min-width: 0; }
-.fields input, .fields select, .fields textarea { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: var(--control-radius); padding: 8px; font-size: .9rem; font-weight: 400; }
-.fields textarea { resize: vertical; }
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.editor { display: grid; gap: 13px; }
+.editor > label { display: grid; gap: 5px; font-size: .8rem; font-weight: 650; }
+.editor > label > select { border: 1px solid var(--line); background: var(--surface); border-radius: var(--control-radius); padding: 8px; }
 .footer { border-top: 1px solid var(--line); justify-content: flex-end; }
 .footer button, .icon { border-radius: var(--control-radius); padding: 7px 12px; cursor: pointer; font-size: .83rem; }
 .icon { padding: 4px; display: grid; background: transparent; border: 0; color: var(--muted); }

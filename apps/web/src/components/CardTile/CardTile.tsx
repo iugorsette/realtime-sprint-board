@@ -1,8 +1,12 @@
-import { memo } from 'react';
+import { memo, type ComponentPropsWithRef } from 'react';
 import type { Assignee, Card } from '@board/shared';
 import styles from './CardTile.module.css';
 
 export const priorityNames = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High', URGENT: 'Urgent' } as const;
+
+export function CardSurface({ className, ...props }: ComponentPropsWithRef<'article'>) {
+  return <article {...props} className={className ? `${styles.surface} ${className}` : styles.surface} />;
+}
 
 export function Avatar({ person }: { person: Assignee }) {
   const color = [...person.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 4;
