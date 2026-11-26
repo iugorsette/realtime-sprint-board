@@ -1,0 +1,22 @@
+{
+  "name": "realtime-sprint-board",
+  "private": true,
+  "packageManager": "pnpm@10.30.0",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "dev": "pnpm --filter @board/shared build && pnpm db:generate && pnpm --parallel --filter @board/web --filter @board/api dev",
+    "build": "pnpm db:generate && pnpm -r build",
+    "typecheck": "pnpm --filter @board/shared build && pnpm db:generate && pnpm -r typecheck",
+    "lint": "eslint .",
+    "test:cov": "pnpm --filter @board/shared build && pnpm db:generate && pnpm -r test:cov",
+    "db:generate": "pnpm --filter @board/api db:generate",
+    "db:migrate": "pnpm --filter @board/api db:migrate",
+    "db:seed": "pnpm --filter @board/shared build && pnpm db:generate && pnpm --filter @board/api db:seed"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.50.0"
+  }
+}
