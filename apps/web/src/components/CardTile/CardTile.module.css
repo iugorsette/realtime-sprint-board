@@ -43,8 +43,6 @@
   overflow-wrap: anywhere;
 }
 
-button.title { cursor: pointer; }
-button.title:hover { color: var(--accent); }
 .description {
   margin: 0;
   color: var(--muted);
@@ -93,21 +91,3 @@ button.title:hover { color: var(--accent); }
 .avatar[data-color="1"] { background: #dceee6; color: #2d6650; }
 .avatar[data-color="2"] { background: #f8e8d5; color: #794c21; }
 .avatar[data-color="3"] { background: #e2eafa; color: #3d568e; }
-
-.handle {
-  position: absolute;
-  inset: 8px 8px auto auto;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  width: 26px;
-  height: 25px;
-  color: var(--muted);
-  cursor: grab;
-  touch-action: none;
-}
-
-.handle:hover, .handle:focus-visible { color: var(--accent); background: var(--accent-pale); }
-.handle:active { cursor: grabbing; }

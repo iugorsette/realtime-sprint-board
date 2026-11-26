@@ -1,18 +1,18 @@
 import { useRef, useState, type RefObject } from 'react';
 import {
-  closestCenter, DndContext, DragOverlay, KeyboardSensor, PointerSensor, pointerWithin,
+  closestCenter, DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin,
   useDraggable, useDroppable, useSensor, useSensors,
   type Announcements, type KeyboardCoordinateGetter, type ScreenReaderInstructions,
 } from '@dnd-kit/core';
 import { Check, Circle, CircleDot, Columns3, LoaderCircle, Plus } from 'lucide-react';
 import type { Assignee, Card, Column, MoveCard } from '@board/shared';
 import { keyboardSlot, moveTarget, slotId, type Slot } from '../../board/drag';
-import { CardTile, DragHandle } from '../CardTile/CardTile';
+import { CardTile } from '../CardTile/CardTile';
 import styles from './BoardGrid.module.css';
 
 const icons = { backlog: Columns3, todo: Circle, 'in-progress': CircleDot, done: Check } as const;
 const instructions: ScreenReaderInstructions = {
-  draggable: 'Press Space or Enter to pick up the card. Use the arrow keys to move. Press Space or Enter to drop, or Escape to cancel.',
+  draggable: 'Press Enter to open the card. Press Space to pick it up, then use the arrow keys to move. Press Space or Enter to drop, or Escape to cancel.',
 };
 
 const readSlot = (data: { current?: { slot?: Slot } } | undefined) => data?.current?.slot;
@@ -29,8 +29,18 @@ function DragCard({ card, assignee, onOpen, pending }: {
   return (
     <li ref={drop.setNodeRef} className={styles.slot} data-over={drop.isOver && !drag.isDragging || undefined}>
       <article ref={drag.setNodeRef} className={styles.card} data-dragging={drag.isDragging || undefined}>
-        <CardTile card={card} assignee={assignee} onOpen={onOpen} />
-        <DragHandle card={card} attributes={drag.attributes} listeners={drag.listeners} setRef={drag.setActivatorNodeRef} disabled={pending} />
+        <button
+          type="button" ref={drag.setActivatorNodeRef} className={styles.openCard}
+          {...drag.attributes} {...drag.listeners}
+          aria-label={card.title} aria-disabled={undefined} data-drag-card={card.id}
+          onClick={() => onOpen(card)}
+          onKeyDown={(event) => {
+            if (pending && event.code === 'Space') event.preventDefault();
+            else drag.listeners?.onKeyDown?.(event);
+          }}
+        >
+          <CardTile card={card} assignee={assignee} />
+        </button>
       </article>
     </li>
   );
@@ -77,8 +87,13 @@ export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMov
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: coordinates, scrollBehavior: 'auto' }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: coordinates,
+      scrollBehavior: 'auto',
+      keyboardCodes: { start: ['Space'], end: ['Space', 'Enter'], cancel: ['Escape'] },
+    }),
   );
   const announcements: Announcements = {
     onDragStart({ active }) { return `Picked up ${active.data.current?.card.title}.`; },

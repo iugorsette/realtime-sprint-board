@@ -16,7 +16,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-Open [localhost:5173](http://localhost:5173). Open a second tab to see edits and moves synchronize. Use a card’s grip to drag it. With the grip focused, press Space or Enter to pick up the card, use the arrow keys to move, and press Space or Enter to drop or Escape to cancel.
+Open [localhost:5173](http://localhost:5173). Open a second tab to see edits and moves synchronize. Drag a card from anywhere on its surface. With the card focused, press Space to pick it up, use the arrow keys to move, and press Space or Enter to drop or Escape to cancel. Click or press Enter to open the card.
 
 The PostgreSQL volume keeps your changes across restarts. The seed skips an existing demo and preserves edits. See `.env.example` for loopback server and database settings.
 
