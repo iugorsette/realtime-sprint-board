@@ -6,9 +6,10 @@ import { CardSurface } from '../CardTile/CardTile';
 import { CardFields, readCardFields } from '../CardFields/CardFields';
 import styles from './CardDialog.module.css';
 
-export function CardDialog({ board, card, pending, onClose, onSave }: {
+export function CardDialog({ board, card, availableTags, pending, onClose, onSave }: {
   board: Board;
   card: Card;
+  availableTags: string[];
   pending: boolean;
   onClose: () => void;
   onSave: (action: CardAction) => Promise<void>;
@@ -67,7 +68,7 @@ export function CardDialog({ board, card, pending, onClose, onSave }: {
             {confirmDelete ? (
               <p className={styles.confirm}>Delete <strong>{card.title}</strong>? This action can’t be undone.</p>
             ) : (
-              <CardFields card={card} titleRef={title} assignees={board.assignees} pending={pending} />
+              <CardFields card={card} titleRef={title} assignees={board.assignees} availableTags={availableTags} pending={pending} />
             )}
             {error && <p role="alert" className={styles.error}>{error}</p>}
           </div>

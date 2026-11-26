@@ -2,6 +2,7 @@ import { Search, X } from 'lucide-react';
 import type { Assignee, Priority } from '@board/shared';
 import type { Filters } from '../../board/model';
 import { priorityNames } from '../CardTile/CardTile';
+import { TagPicker } from '../TagPicker/TagPicker';
 import styles from './FiltersBar.module.css';
 
 export const emptyFilters: Filters = { search: '', assignee: '', priorities: [], tags: [] };
@@ -56,7 +57,7 @@ export function FiltersBar({ filters, onChange, assignees, tags }: {
       <CheckFilter label="Priority" values={filters.priorities}
         options={priorities.map((id) => ({ id, label: priorityNames[id] }))}
         onChange={(priorities) => onChange({ ...filters, priorities })} />
-      <CheckFilter label="Tags" values={filters.tags} options={tags.map((id) => ({ id, label: id }))}
+      <TagPicker label="Filter by tag" options={tags} value={filters.tags}
         onChange={(tags) => onChange({ ...filters, tags })} />
       {active && <button type="button" className={styles.clear} onClick={() => onChange(emptyFilters)}>
         <X size={14} aria-hidden="true" /> Clear

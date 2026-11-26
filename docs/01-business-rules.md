@@ -1,6 +1,6 @@
 # Business rules
 
-The local demo opens one Sprint Board without authentication. It has four ordered columns and twelve initial cards. A card has a required title, optional description, priority, tags and an optional assignee from the same board. Priorities are LOW, MEDIUM, HIGH and URGENT. Cards can be created, edited, moved or deleted. The bootstrap seed runs once for a given board.
+The local demo opens one Sprint Board without authentication. It has four ordered columns and twelve initial cards. A card has a required title, optional description, priority, tags and an optional assignee from the same board. Tag suggestions come from the current board. Card forms can add a tag that is missing from the suggestions. Filters select existing tags. Priorities are LOW, MEDIUM, HIGH and URGENT. Cards can be created, edited, moved or deleted. The bootstrap seed runs once for a given board.
 
 Columns sort by position then ID. Cards sort by position then ID within a column. New cards append. The column opens an inline draft that saves when focus leaves it or the user submits with Enter. A title is required, and Escape cancels the draft. Moves identify a destination column and the card to insert before. A null anchor appends. When filtering, the next visible card is the anchor and the server uses its immediate neighbor in the full list. Dropping a card at its original visible slot is a no-op. The active card is excluded from the list before computing placement.
 

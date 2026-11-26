@@ -4,9 +4,10 @@ import { CardFields, readCardFields } from '../CardFields/CardFields';
 import { CardSurface } from '../CardTile/CardTile';
 import styles from './CardComposer.module.css';
 
-export function CardComposer({ columnId, assignees, pending, onClose, onSave }: {
+export function CardComposer({ columnId, assignees, availableTags, pending, onClose, onSave }: {
   columnId: string;
   assignees: Assignee[];
+  availableTags: string[];
   pending: boolean;
   onClose: () => void;
   onSave: (input: CreateCard) => Promise<void>;
@@ -56,7 +57,7 @@ export function CardComposer({ columnId, assignees, pending, onClose, onSave }: 
           }
         }}
       >
-        <CardFields titleRef={title} assignees={assignees} pending={pending} />
+        <CardFields titleRef={title} assignees={assignees} availableTags={availableTags} pending={pending} />
         {error && <p className={styles.error} role="alert">{error}</p>}
         <div className={styles.footer}>
           <span role="status">{pending ? 'Saving…' : 'Saves when you leave the card'}</span>

@@ -75,12 +75,12 @@ export function App() {
               onOpen={setSelectedCard} onCreate={setDraftColumn} onMove={move}
               draft={draftColumn ? {
                 columnId: draftColumn,
-                content: <CardComposer columnId={draftColumn} assignees={board.assignees}
+                content: <CardComposer columnId={draftColumn} assignees={board.assignees} availableTags={tags}
                   pending={mutation.isPending} onClose={closeDraft}
                   onSave={(input) => mutation.mutateAsync({ type: 'create', input })} />,
               } : undefined}
             />
-            {selectedCard && <CardDialog board={board} card={selectedCard} pending={mutation.isPending} onClose={closeCard}
+            {selectedCard && <CardDialog board={board} card={selectedCard} availableTags={tags} pending={mutation.isPending} onClose={closeCard}
               onSave={(action) => mutation.mutateAsync(action)} />}
           </>
         ) : query.isError ? (

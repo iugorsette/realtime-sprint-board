@@ -1,5 +1,5 @@
 .fields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 13px; }
-.fields label { display: grid; gap: 5px; font-size: .8rem; font-weight: 650; min-width: 0; }
+.fields label, .tags { display: grid; gap: 5px; font-size: .8rem; font-weight: 650; min-width: 0; }
 .fields input, .fields select, .fields textarea {
   width: 100%;
   border: 1px solid var(--line);
