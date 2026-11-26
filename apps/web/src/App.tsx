@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Columns3, Plus, Radio, X } from 'lucide-react';
+import { Columns3, Radio, X } from 'lucide-react';
 import { DEMO_BOARD_ID, type Card, type MoveCard } from '@board/shared';
 import { useBoard } from './board/useBoard';
 import { filterColumns } from './board/model';
@@ -33,7 +33,6 @@ export function App() {
     }
   }
 
-  const firstColumn = board?.columns[0];
   const total = board?.columns.reduce((sum, column) => sum + column.cards.length, 0) ?? 0;
   const done = board?.columns.find(({ id }) => id === 'done')?.cards.length ?? 0;
   const shown = columns.reduce((sum, column) => sum + column.cards.length, 0);
@@ -60,10 +59,6 @@ export function App() {
           <div>
             <h1>{board?.name ?? 'Sprint Board'}</h1>
           </div>
-          {firstColumn && (
-            <button className={styles.primary} type="button" disabled={mutation.isPending}
-              onClick={() => create(firstColumn.id)}><Plus size={17} aria-hidden="true" /> New card</button>
-          )}
         </div>
         {board ? (
           <>
