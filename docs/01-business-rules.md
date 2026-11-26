@@ -12,4 +12,6 @@ Search filters the board by title and description without regard to case or acce
 
 Preferences apply to the current browser. Choose Small, Medium, or Large text and optionally show full card descriptions. The filters dialog is always available on mobile and can replace the filter controls on desktop. Search stays in the toolbar.
 
+If the saved title or description changes while a person is editing it, the open card keeps their draft and shows the current saved text. They can keep the current text or explicitly apply their draft. If the field changes again before that write, the person reviews the new value before applying the draft again. A failed save also keeps the draft available to retry while the card stays open.
+
 The Add tag button sits before the selected tags. Tag suggestions wrap across horizontal rows in a floating panel that can extend past the open card's edge. The card has no internal scrollbar, and tall cards scroll at the viewport edge.

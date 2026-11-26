@@ -25,9 +25,8 @@
 }
 .header { padding: 23px var(--detail-gap) 0; background: color-mix(in srgb, var(--lane-surface) 35%, var(--surface)); border-radius: 11px 11px 0 0; }
 .titleRow { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
+.titleEditor { flex: 1; min-width: 0; }
 .titleRow h2 {
-  flex: 1;
-  min-width: 0;
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(1.52rem, 4vw, 2.18rem);
@@ -106,6 +105,28 @@
 .inlineTrigger:hover, .inlineTrigger:focus-visible { background: var(--surface-muted); }
 .textEditor { padding-inline: 7px; border-color: var(--line); background: var(--surface); }
 textarea.textEditor { resize: vertical; line-height: inherit; }
+.draftFeedback {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  font-size: .85rem;
+}
+.draftFeedback p { margin: 0; }
+.currentText { color: var(--ink-soft); white-space: pre-wrap; overflow-wrap: anywhere; }
+.draftActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.applyDraft {
+  padding: 7px 11px;
+  border: 1px solid var(--accent);
+  border-radius: var(--control-radius);
+  background: var(--accent-pale);
+  color: var(--accent-dark);
+  cursor: pointer;
+}
+.applyDraft:hover { border-color: var(--accent-dark); }
 .empty { color: var(--muted); }
 .feedback { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--detail-gap) 12px; color: var(--muted); font-size: .8rem; }
 .error { color: var(--danger); }

@@ -91,10 +91,8 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
       <CardSurface className={styles.surface} data-column={column?.id}>
         <header className={styles.header}>
           <div className={styles.titleRow}>
-            <h2 ref={heading} tabIndex={-1} aria-label={displayed.title}>
-              <InlineText label="Title" value={displayed.title} disabled={busyElsewhere}
-                onSave={(value, previous) => edit({ field: 'title', value, previous })} />
-            </h2>
+            <InlineText label="Title" value={card.title} disabled={busyElsewhere} heading={heading}
+              onSave={(value, previous) => edit({ field: 'title', value, previous })} />
             <button type="button" className={styles.icon} aria-label="Close card" disabled={busy} onClick={onClose}>
               <X size={19} aria-hidden="true" />
             </button>
@@ -142,7 +140,7 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
         <div className={styles.details}>
           <section className={styles.description}>
             <h3>Description</h3>
-            <InlineText label="Description" value={displayed.description} empty="Add a description" multiline
+            <InlineText label="Description" value={card.description} empty="Add a description" multiline
               disabled={busyElsewhere} onSave={(value, previous) => edit({ field: 'description', value, previous })} />
           </section>
           <section className={styles.tags}>

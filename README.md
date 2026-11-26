@@ -20,6 +20,14 @@ Open [localhost:5173](http://localhost:5173). Open a second tab to see edits and
 
 The PostgreSQL volume keeps your changes across restarts. The seed skips an existing demo and preserves edits. See `.env.example` for loopback server and database settings.
 
+### Try a concurrent edit
+
+[Watch the two-tab demo](docs/concurrent-edit.webm).
+
+1. Open the same card in two tabs. Start editing its description in both and enter different text.
+2. Save in the first tab with Ctrl or Command plus Enter, then save in the second tab. The second tab keeps your draft and shows the saved description.
+3. Choose **Keep current** to discard the draft or **Apply my draft** to save it. Watch the card update in the other tab when you apply it.
+
 ## Verify
 
 ```sh

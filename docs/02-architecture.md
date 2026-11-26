@@ -28,7 +28,7 @@ The board row lock serializes writes at demo scale. Read snapshots use repeatabl
 
 TanStack Query owns the board snapshot. Local state owns filter selections, inline drafts and pending field edits, the active drag and connection status. Filter projections retain card references. Draggable card wrappers subscribe to drag context independently of presentational card bodies.
 
-The card details stay open during editing. A queue sends each field change against the latest known card version and applies list additions and removals individually. Status selection uses the same version-checked move endpoint as drag and drop. Pending field changes render immediately and failed writes revert through the queue and query cache.
+The card details stay open during editing. A queue sends each field change against the latest known card version and applies list additions and removals individually. Status selection uses the same version-checked move endpoint as drag and drop. When a text edit reaches the front of the queue, it checks the original field value against the latest cached value. The inline editor keeps its draft on a mismatch or a failed save. It displays the committed field from the query cache and uses the value shown during review as the baseline for an explicit retry. The API still checks the card version to cover changes that arrive after the client check.
 
 The full-viewport card dialog handles scrolling for tall content. The card surface grows with its contents. The compact tag picker places its button or input before the selected chips in the layout and tab order, and caps the width of the control at 18 rem. It anchors a wrapping panel of suggestions to the input outside the card layout and can flip the panel above the input on short viewports.
 
