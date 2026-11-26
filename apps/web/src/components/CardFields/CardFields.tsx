@@ -1,5 +1,6 @@
 import { useId, useState, type Ref } from 'react';
 import type { Assignee, Card, Priority } from '@board/shared';
+import { AssigneePicker } from '../AssigneePicker/AssigneePicker';
 import { priorityNames } from '../CardTile/CardTile';
 import { TagPicker } from '../TagPicker/TagPicker';
 import styles from './CardFields.module.css';
@@ -23,6 +24,7 @@ export function CardFields({ card, titleRef, assignees, availableTags, pending }
   pending: boolean;
 }) {
   const id = useId();
+  const [assigneeIds, setAssigneeIds] = useState(card?.assigneeIds ?? []);
   const [tags, setTags] = useState(card?.tags ?? []);
   return (
     <fieldset disabled={pending} className={styles.fields}>
@@ -40,15 +42,11 @@ export function CardFields({ card, titleRef, assignees, availableTags, pending }
           {(Object.keys(priorityNames) as Priority[]).map((priority) => <option key={priority} value={priority}>{priorityNames[priority]}</option>)}
         </select>
       </div>
-      <fieldset className={styles.assignees}>
-        <legend>Assignees</legend>
-        {assignees.map(({ id, name }) => (
-          <label key={id}>
-            <input type="checkbox" name="assignees" value={id} defaultChecked={card?.assigneeIds.includes(id)} />
-            {name}
-          </label>
-        ))}
-      </fieldset>
+      <div className={styles.field}>
+        <span>Assignees</span>
+        <AssigneePicker assignees={assignees} value={assigneeIds} onChange={setAssigneeIds} />
+        {assigneeIds.map((assigneeId) => <input key={assigneeId} type="hidden" name="assignees" value={assigneeId} />)}
+      </div>
       <div className={styles.tags}>
         <span>Tags</span>
         <TagPicker label="Tags" options={availableTags} value={tags} onChange={setTags} allowCreate />

@@ -9,4 +9,26 @@
 .options [role="option"]:hover, .options [aria-selected="true"] { background: var(--accent-pale); }
 .empty { color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.optionIcon { display: inline-flex; flex: none; }
+.chips .optionIcon > span { width: 19px; height: 19px; font-size: .57rem; }
 .chips button { display: flex; align-items: center; gap: 4px; padding: 2px 5px; border: 0; border-radius: 5px; color: var(--accent-dark); background: var(--accent-pale); font-size: .74rem; cursor: pointer; overflow-wrap: anywhere; }
+.picker[data-compact] .options {
+  position: absolute;
+  inset: calc(100% + 4px) 0 auto;
+  box-shadow: var(--raised-shadow);
+}
+.add {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 4px;
+  min-height: 36px;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: var(--accent-dark);
+  cursor: pointer;
+  font-size: .8rem;
+}
+.add:hover { background: var(--accent-pale); }
