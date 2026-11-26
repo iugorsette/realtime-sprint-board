@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { Pencil } from 'lucide-react';
 import styles from './CardDialog.module.css';
 
 export function InlineText({ label, value, empty, multiline = false, disabled, onSave }: {
@@ -48,7 +47,6 @@ export function InlineText({ label, value, empty, multiline = false, disabled, o
         aria-description={multiline && value ? value : undefined}
         disabled={disabled} onClick={() => setDraft({ value, previous: value })}>
         <span className={value ? undefined : styles.empty}>{value || empty}</span>
-        <Pencil size={14} aria-hidden="true" />
       </button>
     );
   }

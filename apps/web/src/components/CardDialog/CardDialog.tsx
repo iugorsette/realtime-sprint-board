@@ -1,13 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Flag, Tags, Trash2, Users, X } from 'lucide-react';
+import { useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
+import { ChevronDown, Plus, X } from 'lucide-react';
 import { prioritySchema, type Board, type BoardChange, type Card } from '@board/shared';
 import { RequestError, type CardAction } from '../../board/api';
 import { useCardEdits } from '../../board/useCardEdits';
 import { AssigneePicker } from '../AssigneePicker/AssigneePicker';
-import { CardSurface, priorityNames } from '../CardTile/CardTile';
+import { Avatar, CardSurface, priorityNames } from '../CardTile/CardTile';
 import { TagPicker } from '../TagPicker/TagPicker';
 import { InlineText } from './InlineText';
 import styles from './CardDialog.module.css';
+
+function closeDisclosureOnBlur({ currentTarget, relatedTarget }: FocusEvent<HTMLDetailsElement>) {
+  if (!currentTarget.contains(relatedTarget)) currentTarget.open = false;
+}
+
+function closeDisclosureOnEscape(event: KeyboardEvent<HTMLDetailsElement>) {
+  if (event.key !== 'Escape' || !event.currentTarget.open) return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.open = false;
+  event.currentTarget.querySelector('summary')?.focus();
+}
 
 export function CardDialog({ board, card, availableTags, pending, onClose, onSave }: {
   board: Board;
@@ -17,14 +29,16 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
   onClose: () => void;
   onSave: (action: CardAction) => Promise<BoardChange | null>;
 }) {
+  const priorityId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
-  const deleteButton = useRef<HTMLButtonElement>(null);
+  const deleteAction = useRef<HTMLButtonElement>(null);
   const cancelDelete = useRef<HTMLButtonElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const { card: displayed, edit, saving, error } = useCardEdits(board.id, card, onSave);
   const column = board.columns.find(({ id }) => id === card.columnId);
+  const assigned = board.assignees.filter(({ id }) => displayed.assigneeIds.includes(id));
   const busy = pending || saving;
   const busyElsewhere = pending && !saving;
 
@@ -42,7 +56,7 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
   function cancelDeletion() {
     setConfirmDelete(false);
     setDeleteError('');
-    deleteButton.current?.focus({ preventScroll: true });
+    requestAnimationFrame(() => deleteAction.current?.focus({ preventScroll: true }));
   }
 
   async function deleteCard() {
@@ -76,21 +90,59 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
     }}>
       <CardSurface className={styles.surface}>
         <header className={styles.header}>
-          <div className={styles.headerContent}>
-            {column && <span className={styles.column}>{column.name}</span>}
+          <div className={styles.titleRow}>
             <h2 ref={heading} tabIndex={-1} aria-label={displayed.title}>
               <InlineText label="Title" value={displayed.title} disabled={busyElsewhere}
                 onSave={(value, previous) => edit({ field: 'title', value, previous })} />
             </h2>
-          </div>
-          <div className={styles.headerActions}>
-            <button ref={deleteButton} type="button" className={styles.icon} aria-label="Delete card"
-              disabled={busy} onClick={() => setConfirmDelete(true)}>
-              <Trash2 size={17} aria-hidden="true" />
-            </button>
             <button type="button" className={styles.icon} aria-label="Close card" disabled={busy} onClick={onClose}>
               <X size={19} aria-hidden="true" />
             </button>
+          </div>
+          <div className={styles.subheader} role="group" aria-label="Card properties">
+            {column && (
+              <div className={styles.property}>
+                <span className={styles.propertyLabel}>Status</span>
+                <span className={styles.column} data-column={column.id}>{column.name}</span>
+              </div>
+            )}
+            <div className={styles.property}>
+              <label className={styles.propertyLabel} htmlFor={priorityId}>Priority</label>
+              <span className={styles.priority} data-priority={displayed.priority}>
+                <select id={priorityId} value={displayed.priority} disabled={busyElsewhere} onChange={(event) => {
+                  const value = prioritySchema.parse(event.target.value);
+                  edit({ field: 'priority', value });
+                }}>
+                  {prioritySchema.options.map((priority) => (
+                    <option key={priority} value={priority}>{priorityNames[priority]}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} aria-hidden="true" />
+              </span>
+            </div>
+            <div className={`${styles.property} ${styles.assigneeProperty}`}>
+              <span className={styles.propertyLabel}>Assignees</span>
+              <details className={styles.assignees} onBlur={closeDisclosureOnBlur} onKeyDown={closeDisclosureOnEscape}
+                onToggle={({ currentTarget }) => {
+                  if (currentTarget.open) currentTarget.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true });
+                }}>
+                <summary className={styles.assigneeTrigger} aria-label="Edit assignees"
+                  title={assigned.map(({ name }) => name).join(', ') || 'Add assignees'}>
+                  {assigned.length > 0 && (
+                    <span className={styles.avatars} aria-hidden="true">
+                      {assigned.slice(0, 3).map((person) => <Avatar key={person.id} person={person} />)}
+                      {assigned.length > 3 && <span className={styles.avatarOverflow}>+{assigned.length - 3}</span>}
+                    </span>
+                  )}
+                  <span className={styles.assigneeAdd}><Plus size={15} aria-hidden="true" /></span>
+                  {assigned.length === 0 && <span>Add people</span>}
+                </summary>
+                <div className={styles.assigneePopover}>
+                  <AssigneePicker assignees={board.assignees} value={displayed.assigneeIds}
+                    onChange={(ids) => changeList('assigneeIds', ids)} />
+                </div>
+              </details>
+            </div>
           </div>
         </header>
         <div className={styles.details}>
@@ -99,36 +151,11 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
             <InlineText label="Description" value={displayed.description} empty="Add a description" multiline
               disabled={busyElsewhere} onSave={(value, previous) => edit({ field: 'description', value, previous })} />
           </section>
-          <dl className={styles.properties}>
-            <div>
-              <dt><Flag size={14} aria-hidden="true" /> Priority</dt>
-              <dd className={styles.priority} data-priority={displayed.priority}>
-                <select aria-label="Priority" value={displayed.priority} disabled={busyElsewhere} onChange={(event) => {
-                  const value = prioritySchema.parse(event.target.value);
-                  edit({ field: 'priority', value });
-                }}>
-                  {prioritySchema.options.map((priority) => (
-                    <option key={priority} value={priority}>{priorityNames[priority]}</option>
-                  ))}
-                </select>
-                <ChevronDown size={13} aria-hidden="true" />
-              </dd>
-            </div>
-            <div>
-              <dt><Users size={14} aria-hidden="true" /> Assignees</dt>
-              <dd>
-                <AssigneePicker assignees={board.assignees} value={displayed.assigneeIds} compact
-                  onChange={(ids) => changeList('assigneeIds', ids)} />
-              </dd>
-            </div>
-            <div>
-              <dt><Tags size={14} aria-hidden="true" /> Tags</dt>
-              <dd>
-                <TagPicker label="Tags" options={availableTags} value={displayed.tags} allowCreate compact
-                  onChange={(tags) => changeList('tags', tags)} />
-              </dd>
-            </div>
-          </dl>
+          <section className={styles.tags}>
+            <h3>Tags</h3>
+            <TagPicker label="Tags" options={availableTags} value={displayed.tags} allowCreate compact
+              onChange={(tags) => changeList('tags', tags)} />
+          </section>
         </div>
         {(saving || error || deleteError) && (
           <div className={styles.feedback}>
@@ -136,15 +163,20 @@ export function CardDialog({ board, card, availableTags, pending, onClose, onSav
             {(deleteError || error) && <span className={styles.error} role="alert">{deleteError || error}</span>}
           </div>
         )}
-        {confirmDelete && (
-          <footer className={styles.footer}>
-            <p>Delete this card?</p>
-            <button ref={cancelDelete} type="button" className={styles.secondary} disabled={busy}
-              onClick={cancelDeletion}>Cancel</button>
-            <button type="button" className={styles.danger} disabled={busy}
-              onClick={() => void deleteCard()}>Confirm delete</button>
-          </footer>
-        )}
+        <footer className={styles.footer}>
+          {confirmDelete ? (
+            <>
+              <p>Delete this card?</p>
+              <button ref={cancelDelete} type="button" className={styles.secondary} disabled={busy}
+                onClick={cancelDeletion}>Cancel</button>
+              <button type="button" className={styles.danger} disabled={busy}
+                onClick={() => void deleteCard()}>Confirm delete</button>
+            </>
+          ) : (
+            <button ref={deleteAction} type="button" className={styles.deleteAction} disabled={busy}
+              onClick={() => setConfirmDelete(true)}>Delete card</button>
+          )}
+        </footer>
       </CardSurface>
     </dialog>
   );
