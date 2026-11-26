@@ -13,9 +13,9 @@ export function Avatar({ person }: { person: Assignee }) {
   return <span className={styles.avatar} data-color={color} title={person.name} aria-label={person.name}>{person.initials}</span>;
 }
 
-export const CardTile = memo(function CardTile({ card, assignee }: {
+export const CardTile = memo(function CardTile({ card, assignees }: {
   card: Card;
-  assignee?: Assignee;
+  assignees: Map<string, Assignee>;
 }) {
   return (
     <span className={styles.content}>
@@ -29,7 +29,12 @@ export const CardTile = memo(function CardTile({ card, assignee }: {
           {card.tags.slice(0, 2).map((tag) => <span key={tag} className={styles.tag}>{tag}</span>)}
           {card.tags.length > 2 && <span className={styles.tag}>+{card.tags.length - 2}</span>}
         </span>
-        {assignee && <Avatar person={assignee} />}
+        <span className={styles.avatars}>
+          {card.assigneeIds.map((id) => {
+            const person = assignees.get(id);
+            return person && <Avatar key={id} person={person} />;
+          })}
+        </span>
       </span>
     </span>
   );

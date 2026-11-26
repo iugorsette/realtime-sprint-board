@@ -15,7 +15,8 @@ export function filterColumns(columns: Column[], filters: Filters) {
   return columns.map((column) => {
     const cards = column.cards.filter((card) => {
       const matchesSearch = card.title.toLowerCase().includes(search) || card.description.toLowerCase().includes(search);
-      const matchesAssignee = !filters.assignee || (card.assigneeId ?? 'unassigned') === filters.assignee;
+      const matchesAssignee = !filters.assignee
+        || (filters.assignee === 'unassigned' ? card.assigneeIds.length === 0 : card.assigneeIds.includes(filters.assignee));
       const matchesPriority = !filters.priorities.length || filters.priorities.includes(card.priority);
       const matchesTags = !filters.tags.length || card.tags.some((tag) => filters.tags.includes(tag));
       return matchesSearch && matchesAssignee && matchesPriority && matchesTags;

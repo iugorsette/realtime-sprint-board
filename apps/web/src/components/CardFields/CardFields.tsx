@@ -1,4 +1,4 @@
-import { useState, type Ref } from 'react';
+import { useId, useState, type Ref } from 'react';
 import type { Assignee, Card, Priority } from '@board/shared';
 import { priorityNames } from '../CardTile/CardTile';
 import { TagPicker } from '../TagPicker/TagPicker';
@@ -10,7 +10,7 @@ export function readCardFields(form: HTMLFormElement) {
     title: fields.get('title'),
     description: fields.get('description'),
     priority: fields.get('priority'),
-    assigneeId: fields.get('assignee') || null,
+    assigneeIds: fields.getAll('assignees'),
     tags: fields.getAll('tags'),
   };
 }
@@ -22,20 +22,33 @@ export function CardFields({ card, titleRef, assignees, availableTags, pending }
   availableTags: string[];
   pending: boolean;
 }) {
+  const id = useId();
   const [tags, setTags] = useState(card?.tags ?? []);
   return (
     <fieldset disabled={pending} className={styles.fields}>
-      <label>Title<input ref={titleRef} name="title" defaultValue={card?.title} maxLength={120} required /></label>
-      <label>Description<textarea name="description" defaultValue={card?.description} maxLength={2000} rows={4} /></label>
-      <div className={styles.row}>
-        <label>Priority<select name="priority" defaultValue={card?.priority ?? 'MEDIUM'}>
-          {(Object.keys(priorityNames) as Priority[]).map((priority) => <option key={priority} value={priority}>{priorityNames[priority]}</option>)}
-        </select></label>
-        <label>Assignee<select name="assignee" defaultValue={card?.assigneeId ?? ''}>
-          <option value="">Unassigned</option>
-          {assignees.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
-        </select></label>
+      <div className={styles.field}>
+        <label htmlFor={`${id}-title`}>Title</label>
+        <input id={`${id}-title`} ref={titleRef} name="title" defaultValue={card?.title} maxLength={120} required />
       </div>
+      <div className={styles.field}>
+        <label htmlFor={`${id}-description`}>Description</label>
+        <textarea id={`${id}-description`} name="description" defaultValue={card?.description} maxLength={2000} rows={4} />
+      </div>
+      <div className={styles.field}>
+        <label htmlFor={`${id}-priority`}>Priority</label>
+        <select id={`${id}-priority`} name="priority" defaultValue={card?.priority ?? 'MEDIUM'}>
+          {(Object.keys(priorityNames) as Priority[]).map((priority) => <option key={priority} value={priority}>{priorityNames[priority]}</option>)}
+        </select>
+      </div>
+      <fieldset className={styles.assignees}>
+        <legend>Assignees</legend>
+        {assignees.map(({ id, name }) => (
+          <label key={id}>
+            <input type="checkbox" name="assignees" value={id} defaultChecked={card?.assigneeIds.includes(id)} />
+            {name}
+          </label>
+        ))}
+      </fieldset>
       <div className={styles.tags}>
         <span>Tags</span>
         <TagPicker label="Tags" options={availableTags} value={tags} onChange={setTags} allowCreate />

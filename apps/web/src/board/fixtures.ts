@@ -2,15 +2,15 @@ import type { Board, Card } from '@board/shared';
 
 export const first: Card = {
   id: 'a', columnId: 'todo', position: 1024, version: 1, title: 'Fix the race',
-  description: 'Retry expired requests', priority: 'URGENT', assigneeId: 'maya', tags: ['backend'],
+  description: 'Retry expired requests', priority: 'URGENT', assigneeIds: ['maya', 'sam'], tags: ['backend'],
 };
 export const second: Card = {
   id: 'b', columnId: 'todo', position: 2048, version: 1, title: 'Document setup',
-  description: '', priority: 'LOW', assigneeId: null, tags: ['docs'],
+  description: '', priority: 'LOW', assigneeIds: [], tags: ['docs'],
 };
 export const third: Card = {
   id: 'c', columnId: 'done', position: 1024, version: 1, title: 'Polish layout',
-  description: '', priority: 'MEDIUM', assigneeId: 'maya', tags: ['frontend'],
+  description: '', priority: 'MEDIUM', assigneeIds: ['maya', 'sam'], tags: ['frontend'],
 };
 export const board: Board = {
   id: 'test', name: 'Test', revision: 1, assignees: [],

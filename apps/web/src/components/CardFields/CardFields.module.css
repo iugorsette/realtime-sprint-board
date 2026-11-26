@@ -1,5 +1,5 @@
 .fields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 13px; }
-.fields label, .tags { display: grid; gap: 5px; font-size: .8rem; font-weight: 650; min-width: 0; }
+.field, .tags { display: grid; gap: 5px; font-size: .8rem; font-weight: 650; min-width: 0; }
 .fields input, .fields select, .fields textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -10,4 +10,7 @@
   font-weight: 400;
 }
 .fields textarea { resize: vertical; }
-.row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.assignees { min-width: 0; padding: 5px 8px 8px; margin: 0; border: 1px solid var(--line); border-radius: var(--control-radius); display: flex; flex-wrap: wrap; gap: 5px 10px; }
+.assignees legend { padding: 0 4px; font-size: .8rem; font-weight: 650; }
+.assignees label { font-size: .8rem; display: flex; align-items: center; gap: 4px; font-weight: 400; }
+.fields .assignees input { width: auto; margin: 0; accent-color: var(--accent); }

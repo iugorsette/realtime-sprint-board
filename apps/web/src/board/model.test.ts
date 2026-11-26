@@ -7,6 +7,7 @@ it('combines search, assignee, priority and tag filters while preserving card re
   const filtered = filterColumns(board.columns, { search: '  EXPIRED ', assignee: 'maya', priorities: ['URGENT', 'MEDIUM'], tags: ['backend', 'docs'] });
   expect(filtered.map(({ cards }) => cards)).toEqual([[first], []]);
   expect(filtered[0].cards[0]).toBe(first);
+  expect(filterColumns(board.columns, { search: '', assignee: 'sam', priorities: [], tags: [] })[0].cards).toEqual([first]);
   expect(filterColumns(board.columns, { search: '', assignee: 'unassigned', priorities: [], tags: [] })[0].cards).toEqual([second]);
   expect(filterColumns(board.columns, { search: '', assignee: '', priorities: [], tags: [] })[0]).toBe(board.columns[0]);
 });

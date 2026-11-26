@@ -15,7 +15,7 @@ const cardFields = z.object({
   title: z.string().trim().min(1).max(120),
   description: z.string().trim().max(2000),
   priority: prioritySchema,
-  assigneeId: idSchema.nullable(),
+  assigneeIds: z.array(idSchema).transform((ids) => [...new Set(ids)]),
   tags: z.array(z.string().trim().min(1).max(30).toLowerCase()).max(10)
     .transform((tags) => [...new Set(tags)]),
 });

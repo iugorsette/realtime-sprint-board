@@ -17,9 +17,9 @@ const instructions: ScreenReaderInstructions = {
 
 const readSlot = (data: { current?: { slot?: Slot } } | undefined) => data?.current?.slot;
 
-function DragCard({ card, assignee, onOpen, pending }: {
+function DragCard({ card, assignees, onOpen, pending }: {
   card: Card;
-  assignee?: Assignee;
+  assignees: Map<string, Assignee>;
   onOpen: (card: Card) => void;
   pending: boolean;
 }) {
@@ -39,7 +39,7 @@ function DragCard({ card, assignee, onOpen, pending }: {
             else drag.listeners?.onKeyDown?.(event);
           }}
         >
-          <CardTile card={card} assignee={assignee} />
+          <CardTile card={card} assignees={assignees} />
         </button>
       </CardSurface>
     </li>
@@ -149,7 +149,7 @@ export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMov
               </div>
               <ul className={styles.cards}>
                 {column.cards.map((card) => (
-                  <DragCard key={card.id} card={card} assignee={card.assigneeId ? assignees.get(card.assigneeId) : undefined}
+                  <DragCard key={card.id} card={card} assignees={assignees}
                     onOpen={onOpen} pending={pending} />
                 ))}
                 {draft?.columnId === column.id && <li className={styles.slot}>{draft.content}</li>}
@@ -162,7 +162,7 @@ export function BoardGrid({ columns, assignees, pending, onOpen, onCreate, onMov
       <DragOverlay dropAnimation={null}>
         {activeCard && (
           <CardSurface className={styles.overlay} aria-hidden="true">
-            <CardTile card={activeCard} assignee={activeCard.assigneeId ? assignees.get(activeCard.assigneeId) : undefined} />
+            <CardTile card={activeCard} assignees={assignees} />
           </CardSurface>
         )}
       </DragOverlay>

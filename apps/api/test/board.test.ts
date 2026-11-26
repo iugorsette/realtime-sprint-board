@@ -16,7 +16,9 @@ const isolatedBoardId = randomUUID();
 const first = randomUUID();
 const second = randomUUID();
 const actor = randomUUID();
-const fields = { title: 'Test card', description: '', priority: 'MEDIUM', tags: ['testing'], assigneeId: null };
+const collaborator = randomUUID();
+const externalActor = randomUUID();
+const fields = { title: 'Test card', description: '', priority: 'MEDIUM', tags: ['testing'], assigneeIds: [] };
 let app: INestApplication;
 let url: string;
 let db: Database['client'];
@@ -71,10 +73,16 @@ beforeAll(async () => {
       id: boardId, name: 'Tests', columns: { create: [
         { id: first, name: 'First', position: 0 }, { id: second, name: 'Second', position: 1 },
       ] },
-      assignees: { create: { id: actor, name: 'Test User', initials: 'TU' } },
+      assignees: { create: [
+        { id: actor, name: 'Test User', initials: 'TU' },
+        { id: collaborator, name: 'Collaborator', initials: 'CO' },
+      ] },
     },
   });
-  await db.board.create({ data: { id: isolatedBoardId, name: 'Separate board' } });
+  await db.board.create({ data: {
+    id: isolatedBoardId, name: 'Separate board',
+    assignees: { create: { id: externalActor, name: 'Another user', initials: 'AU' } },
+  } });
 });
 
 afterAll(async () => {
@@ -92,10 +100,10 @@ beforeEach(async () => {
 
 it('persists CRUD with incrementing revisions and a board snapshot', async () => {
   const card = await create();
-  const edited = await request(`/cards/${card.id}`, 'PATCH', { ...fields, expectedVersion: card.version, assigneeId: actor });
+  const edited = await request(`/cards/${card.id}`, 'PATCH', { ...fields, expectedVersion: card.version, assigneeIds: [actor] });
   expect(edited.status).toBe(200);
   const { change } = await edited.json() as { change: BoardChange };
-  expect(change.cards[0]).toMatchObject({ id: card.id, version: 2, assigneeId: actor });
+  expect(change.cards[0]).toMatchObject({ id: card.id, version: 2, assigneeIds: [actor] });
   expect(await snapshot()).toMatchObject({ revision: 2, columns: [{ cards: change.cards }, { cards: [] }] });
 
   const removed = await request(`/cards/${card.id}?expectedVersion=2`, 'DELETE');
@@ -104,6 +112,28 @@ it('persists CRUD with incrementing revisions and a board snapshot', async () =>
   const deleted = await move(card, second, null);
   expect(deleted.status).toBe(409);
   expect(await deleted.json()).toEqual({ code: 'CARD_VERSION_CONFLICT', card: null });
+});
+
+it('saves, moves, and clears multiple assignees without duplicate assignments', async () => {
+  const created = await request('/cards', 'POST', {
+    ...fields, columnId: first, assigneeIds: [collaborator, actor, collaborator],
+  });
+  expect(created.status).toBe(201);
+  const { change } = await created.json() as { change: BoardChange };
+  const assigned = change.cards[0];
+  const ids = [actor, collaborator].sort();
+  expect(assigned.assigneeIds).toEqual(ids);
+
+  const moved = await move(assigned, second, null);
+  expect(moved.status).toBe(200);
+  const movedChange = await moved.json() as { change: BoardChange };
+  expect(movedChange.change.cards[0]).toMatchObject({ assigneeIds: ids, version: 2 });
+
+  const cleared = await request(`/cards/${assigned.id}`, 'PATCH', { ...fields, expectedVersion: 2 });
+  expect(cleared.status).toBe(200);
+  const clearedChange = await cleared.json() as { change: BoardChange };
+  expect(clearedChange.change.cards[0]).toMatchObject({ assigneeIds: [], version: 3 });
+  expect((await snapshot()).columns[1].cards[0].assigneeIds).toEqual([]);
 });
 
 it('accepts only one concurrent write against a version', async () => {
@@ -146,7 +176,7 @@ it('moves against current neighbors and reports all rebalance changes', async ()
 it('validates input and rejects unknown resources and unrelated assignees', async () => {
   expect((await request('/boards/unknown')).status).toBe(404);
   expect((await request('/cards', 'POST', { ...fields, columnId: 'missing' })).status).toBe(404);
-  expect((await request('/cards', 'POST', { ...fields, columnId: first, assigneeId: 'foreign' })).status).toBe(400);
+  expect((await request('/cards', 'POST', { ...fields, columnId: first, assigneeIds: [actor, externalActor] })).status).toBe(400);
   const card = await create();
   expect((await move(card, 'missing', null)).status).toBe(404);
   expect((await move(card, first, card.id)).status).toBe(400);
