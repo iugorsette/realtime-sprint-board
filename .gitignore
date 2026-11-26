@@ -1,0 +1,7 @@
+/temp
+node_modules/
+dist/
+coverage/
+.env
+*.tsbuildinfo
+apps/api/src/generated/

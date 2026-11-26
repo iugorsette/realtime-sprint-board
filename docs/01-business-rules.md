@@ -1,0 +1,11 @@
+# Business rules
+
+The local demo opens one Sprint Board without authentication. It has four ordered columns and twelve initial cards. A card has a required title, optional description, priority, tags and an optional assignee from the same board. Priorities are LOW, MEDIUM, HIGH and URGENT. Cards can be created, edited, moved or deleted. The bootstrap seed runs once for a given board.
+
+Columns sort by position then ID. Cards sort by position then ID within a column. New cards append. Moves identify a destination column and the card to insert before. A null anchor appends. When filtering, the next visible card is the anchor and the server uses its immediate neighbor in the full list. Dropping a card at its original visible slot is a no-op. The active card is excluded from the list before computing placement.
+
+Positions are finite double-precision numbers. Use a stride of 1024 for the first position and at either end. For interior insertion take the midpoint. When the gap is less than 0.000001 or the result is not strictly between its neighbors, assign the final destination order consecutive strides in the same transaction. Only changed cards are written, and every changed card gets a new version. A normal move writes one card plus the board revision.
+
+Edits, moves and deletes require the card version last seen by the client. The first committed writer wins. Stale writes, deleted cards, or a destination anchor that has moved return HTTP 409 with the latest card or null. Invalid payloads return 400 and unknown boards or columns return 404.
+
+Search matches title and description case-insensitively. Different filter dimensions combine with AND. Selected values within a dimension combine with OR. Keyboard dragging uses Space or Enter to pick up or drop, arrow keys to navigate insertion slots and columns, and Escape to cancel. Announce pickup, destination, drop and cancellation, and restore focus to the moved card when possible.
