@@ -3,6 +3,8 @@ import {
   type Board, type BoardChange, type Card, type Column, type MoveCard, type Priority,
 } from '@board/shared';
 
+import { cardSearchRank, normalizeSearch } from './search';
+
 export interface Filters {
   search: string;
   assignee: string;
@@ -11,10 +13,10 @@ export interface Filters {
 }
 
 export function filterColumns(columns: Column[], filters: Filters) {
-  const search = filters.search.trim().toLowerCase();
+  const search = normalizeSearch(filters.search);
   return columns.map((column) => {
     const cards = column.cards.filter((card) => {
-      const matchesSearch = card.title.toLowerCase().includes(search) || card.description.toLowerCase().includes(search);
+      const matchesSearch = Number.isFinite(cardSearchRank(card, search));
       const matchesAssignee = !filters.assignee
         || (filters.assignee === 'unassigned' ? card.assigneeIds.length === 0 : card.assigneeIds.includes(filters.assignee));
       const matchesPriority = !filters.priorities.length || filters.priorities.includes(card.priority);

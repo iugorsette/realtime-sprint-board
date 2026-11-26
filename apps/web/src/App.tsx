@@ -64,7 +64,8 @@ export function App() {
         {board ? (
           <>
             <div className={styles.toolbar}>
-              <FiltersBar filters={filters} onChange={setFilters} assignees={board.assignees} tags={tags} />
+              <FiltersBar filters={filters} onChange={setFilters} assignees={board.assignees} tags={tags}
+                columns={columns} filtersInDialog={false} onOpenCard={openCard} />
               <div className={styles.metrics}>
                 <span>{shown !== total ? `${shown} of ${total} cards` : `${total} ${total === 1 ? 'card' : 'cards'}`}</span>
                 <span className={styles.progress}><progress max={total || 1} value={done} aria-label="Completed cards" />{done} done</span>
