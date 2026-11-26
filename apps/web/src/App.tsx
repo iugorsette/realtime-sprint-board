@@ -42,7 +42,7 @@ export function App() {
     <>
       <header className={styles.top}>
         <div className={styles.topInner}>
-          <span className={styles.brand}><span className={styles.logo}><Columns3 size={18} aria-hidden="true" /></span> Sprint Board</span>
+          <h1 className={styles.brand}><span className={styles.logo}><Columns3 size={18} aria-hidden="true" /></span>{board?.name ?? 'Sprint Board'}</h1>
           <div className={styles.topRight}>
             <span className={styles.connection} data-connection={connection} role="status">
               <Radio size={15} aria-hidden="true" /> {connectionLabels[connection]}
@@ -56,11 +56,6 @@ export function App() {
         </div>
       </header>
       <main className={styles.main}>
-        <div className={styles.heading}>
-          <div>
-            <h1>{board?.name ?? 'Sprint Board'}</h1>
-          </div>
-        </div>
         {board ? (
           <>
             <div className={styles.toolbar}>
