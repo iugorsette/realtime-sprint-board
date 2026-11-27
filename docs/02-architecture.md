@@ -34,6 +34,8 @@ The full-viewport card dialog handles scrolling for tall content. The card surfa
 
 The browser stores presentation preferences in local storage. Filter state and the suggestions derived from the board are local to the current view.
 
+The saved view preference selects the grid or the grouped list. Both render the same memoized filtered columns, card summaries, draft composer and card dialog. The list uses native row buttons and status sections. The grid owns drag and drop.
+
 Browser storage holds the last committed board snapshot and a queue for submitted creates and text edits. A write enters the queue before its first network attempt. Web Locks serialize queue writes and replays across tabs on the same origin. While paused, a projection applies the pending changes over the cached server snapshot. The production service worker caches the built shell and assets so a previously loaded board can reopen offline.
 
 On resume, the client reads an authoritative snapshot and uses the latest card version for writes. It compares a queued text value and its original value with the server field to recognize a previous success or surface a conflict. Replay acknowledges entries individually. Create receipts persist the client UUID in the same transaction as the card and board revision. The receipt survives card deletion so a lost response cannot produce a duplicate card or resurrect a deleted one.

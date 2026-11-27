@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Columns3, Radio, Settings, X } from 'lucide-react';
+import { Columns3, List, Radio, Settings, X } from 'lucide-react';
 import { DEMO_BOARD_ID, type Card, type MoveCard } from '@board/shared';
 import { useOfflineBoard } from './board/useOfflineBoard';
 import { cardId, findCard } from './board/offline';
@@ -9,6 +9,7 @@ import { PreferencesDialog } from './components/Preferences/PreferencesDialog';
 import { filterColumns } from './board/model';
 import { Avatar } from './components/CardTile/CardTile';
 import { BoardGrid } from './components/BoardGrid/BoardGrid';
+import { CardList } from './components/CardList/CardList';
 import { CardDialog } from './components/CardDialog/CardDialog';
 import { CardComposer } from './components/CardComposer/CardComposer';
 import { emptyFilters, FiltersBar } from './components/FiltersBar/FiltersBar';
@@ -16,6 +17,10 @@ import { SyncDialog } from './components/SyncDialog/SyncDialog';
 import styles from './App.module.css';
 
 const connectionLabels = { connecting: 'Connecting', live: 'Live sync', offline: 'Connection lost' };
+const boardViews = [
+  { value: 'board', label: 'Board', Icon: Columns3 },
+  { value: 'list', label: 'List', Icon: List },
+] as const;
 
 export function App() {
   const sync = useOfflineBoard(DEMO_BOARD_ID);
@@ -78,6 +83,13 @@ export function App() {
     : offline ? 'Working offline' : connectionLabels[query.isError ? 'offline' : connection];
   const pendingLabel = sync.conflicts.length ? `${sync.conflicts.length} to review` : `${pendingCount} pending`;
   const syncStatus = pendingCount > 0 ? `${syncLabel} · ${pendingLabel}` : syncLabel;
+  const pending = mutation.isPending || syncing;
+  const draft = draftColumn ? {
+    columnId: draftColumn,
+    content: <CardComposer columnId={draftColumn} pending={pending} offline={offline} onClose={closeDraft}
+      onSave={sync.create} onDiscard={sync.discardCreation} onWorkOffline={sync.workOffline} />,
+  } : undefined;
+  const viewProps = { columns, columnTotals, assignees, pending, pendingCards: sync.pendingCards, onOpen: openCard, onCreate: setDraftColumn, draft };
 
   function openReview(id?: string) {
     setReviewId(id);
@@ -135,22 +147,25 @@ export function App() {
             <div className={styles.toolbar}>
               <FiltersBar filters={filters} onChange={setFilters} assignees={board.assignees} tags={tags}
                 columns={columns} filtersInDialog={preferences.filtersInDialog} onOpenCard={openCard} />
-              <div className={styles.metrics}>
-                <span>{shown !== total ? `${shown} of ${total} cards` : `${total} ${total === 1 ? 'card' : 'cards'}`}</span>
-                <span className={styles.progress}><progress max={total || 1} value={done} aria-label="Completed cards" />{done} done</span>
+              <div className={styles.toolbarSummary}>
+                <div className={styles.metrics}>
+                  <span>{shown !== total ? `${shown} of ${total} cards` : `${total} ${total === 1 ? 'card' : 'cards'}`}</span>
+                  <span className={styles.progress}><progress max={total || 1} value={done} aria-label="Completed cards" />{done} done</span>
+                </div>
+                <fieldset className={styles.viewPicker} aria-label="Board view" disabled={Boolean(draft)}
+                  title={draft ? 'Finish or cancel the new card to switch views' : undefined}>
+                  {boardViews.map(({ value, label, Icon }) => (
+                    <label key={value}>
+                      <input type="radio" name="board-view" checked={preferences.view === value}
+                        onChange={() => setPreferences((current) => ({ ...current, view: value }))} />
+                      <span><Icon size={15} aria-hidden="true" />{label}</span>
+                    </label>
+                  ))}
+                </fieldset>
               </div>
             </div>
-            <BoardGrid
-              columns={columns} columnTotals={columnTotals} assignees={assignees} pending={mutation.isPending || syncing}
-              dragDisabled={offline || syncing} pendingCards={sync.pendingCards}
-              onOpen={openCard} onCreate={setDraftColumn} onMove={move}
-              draft={draftColumn ? {
-                columnId: draftColumn,
-                content: <CardComposer columnId={draftColumn}
-                  pending={mutation.isPending || syncing} offline={offline} onClose={closeDraft}
-                  onSave={sync.create} onDiscard={sync.discardCreation} onWorkOffline={sync.workOffline} />,
-              } : undefined}
-            />
+            {preferences.view === 'list' ? <CardList {...viewProps} />
+              : <BoardGrid {...viewProps} dragDisabled={offline || syncing} onMove={move} />}
             {displayedCard && <CardDialog key={displayedCard.id} board={board} card={displayedCard} availableTags={tags}
               pending={mutation.isPending} onClose={closeDetails} offline={offline} syncing={syncing}
               savedTitle={savedCard?.title}

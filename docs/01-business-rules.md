@@ -12,6 +12,8 @@ Search filters the board by title and description without regard to case or acce
 
 Preferences apply to the current browser. Choose Small, Medium, or Large text and optionally show full card descriptions. The filters dialog is always available on mobile and can replace the filter controls on desktop. Search stays in the toolbar.
 
+The toolbar switches between Board and List and remembers the last view on this browser. The list groups cards by status in board order and keeps the card order within each group. The same filters, search, card details and direct links work in both views. People can add a card to a status group and change its status from the open card. Drag and drop is available in Board. Finish or cancel a new card draft before switching views.
+
 If the saved title or description changes while a person is editing it, the open card keeps their draft and shows the current saved text. They can keep the current text or explicitly apply their draft. If the field changes again before that write, the person reviews the new value before applying the draft again.
 
 The sync control can pause syncing for this browser. A connection failure during card creation or a text save keeps the submitted change locally and offers a retry or **Keep editing offline**. Entering offline mode is explicit. Offline, people can create cards and edit titles and descriptions. Those changes appear on the board with an alert icon that shows **Pending sync** on hover or keyboard focus and survive reopening the app on the same browser and origin. The production build can also reopen without a connection after its assets and a board snapshot have been cached.

@@ -15,10 +15,11 @@ export function Avatar({ person }: { person: Assignee }) {
   return <span className={styles.avatar} data-color={color} title={person.name} aria-label={person.name}>{person.initials}</span>;
 }
 
-export const CardTile = memo(function CardTile({ card, assignees, pendingTooltipId }: {
+export const CardTile = memo(function CardTile({ card, assignees, pendingTooltipId, layout = 'board' }: {
   card: Card;
-  assignees: Map<string, Assignee>;
+  assignees: ReadonlyMap<string, Assignee>;
   pendingTooltipId?: string;
+  layout?: 'board' | 'list';
 }) {
   const people = card.assigneeIds.flatMap((id) => {
     const person = assignees.get(id);
@@ -28,7 +29,7 @@ export const CardTile = memo(function CardTile({ card, assignees, pendingTooltip
   const [firstTag, ...moreTags] = card.tags;
 
   return (
-    <span className={styles.content}>
+    <span className={styles.content} data-layout={layout}>
       <span className={styles.summary}>
         <span className={styles.title}>{card.title}</span>
         {card.description && <span className={styles.description}>{card.description}</span>}

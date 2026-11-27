@@ -152,3 +152,22 @@
 }
 .surface:not([data-tooltip-dismissed]) .pendingSync:hover .syncTooltip,
 .surface:not([data-tooltip-dismissed]) button:focus-visible .syncTooltip { visibility: visible; }
+
+.content[data-layout="list"] .meta { border-radius: 0; }
+
+@media (min-width: 660px) {
+  .content[data-layout="list"] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 37%); }
+  .content[data-layout="list"] .summary { align-content: center; padding: 10px 14px; }
+  .content[data-layout="list"] .meta {
+    display: grid;
+    grid-template-columns: 3.25rem 23px minmax(0, 1fr) 4.1rem;
+    padding-inline: 4px 14px;
+    border: 0;
+    background: transparent;
+  }
+  .content[data-layout="list"] .meta > * { grid-row: 1; }
+  .content[data-layout="list"] .priority { grid-column: 1; }
+  .content[data-layout="list"] .pendingSync { grid-column: 2; }
+  .content[data-layout="list"] .tags { grid-column: 3; }
+  .content[data-layout="list"] .avatars { grid-column: 4; justify-self: end; }
+}

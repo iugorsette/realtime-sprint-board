@@ -20,6 +20,8 @@ Open [localhost:5173](http://localhost:5173). Open a second tab to see edits and
 
 The PostgreSQL volume keeps your changes across restarts. The seed skips an existing demo and preserves edits. See `.env.example` for loopback server and database settings.
 
+Switch between **Board** and **List** from the toolbar. The list groups cards by status and uses the same search, filters, and card links.
+
 ### Try a concurrent edit
 
 [Watch the two-tab demo](docs/concurrent-edit.webm).
