@@ -36,7 +36,7 @@ The browser stores presentation preferences in local storage. Filter state and t
 
 The saved view preference selects the grid or the grouped list. Both render the same memoized filtered columns, card summaries, draft composer and card dialog. The list uses native row buttons and status sections. The grid owns drag and drop.
 
-List rows reserve space for priority and any visible sync or assignee indicators, then use the remaining width for tags. A resize observer recomputes the visible tags and overflow count when the available width or the tag sizes change.
+Card previews reserve space for priority and any visible sync or assignee indicators, then use the remaining width for tags. A resize observer recomputes the visible tags and overflow count when the available width or the tag sizes change.
 
 Browser storage holds the last committed board snapshot and a queue for submitted creates and text edits. A write enters the queue before its first network attempt. Web Locks serialize queue writes and replays across tabs on the same origin. While paused, a projection applies the pending changes over the cached server snapshot. The production service worker caches the built shell and assets so a previously loaded board can reopen offline.
 

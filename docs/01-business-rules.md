@@ -14,7 +14,7 @@ Preferences apply to the current browser. Choose Small, Medium, or Large text an
 
 The toolbar switches between Board and List and remembers the last view on this browser. The list groups cards by status in board order and keeps the card order within each group. The same filters, search, card details and direct links work in both views. People can add a card to a status group and change its status from the open card. Drag and drop is available in Board. Finish or cancel a new card draft before switching views.
 
-List rows show as many tags as fit in the available space. A **+N** count appears when there are more tags, and hovering over it shows their names.
+Cards in Board and List show as many tags as fit in the available space. A **+N** count appears when there are more tags, and hovering over it shows their names. Card previews show all assignee avatars when there are up to three people. For four or more, they show the first two people and a **+N** count for the rest.
 
 If the saved title or description changes while a person is editing it, the open card keeps their draft and shows the current saved text. They can keep the current text or explicitly apply their draft. If the field changes again before that write, the person reviews the new value before applying the draft again.
 

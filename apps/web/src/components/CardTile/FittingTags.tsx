@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { tagTone } from '../../styles/tagTone';
 import styles from './CardTile.module.css';
 
-export function ListTags({ tags }: { tags: readonly string[] }) {
+export function FittingTags({ tags }: { tags: readonly string[] }) {
   const track = useRef<HTMLSpanElement>(null);
   const counter = useRef<HTMLSpanElement>(null);
   const viewport = useRef<HTMLSpanElement>(null);
@@ -43,7 +43,7 @@ export function ListTags({ tags }: { tags: readonly string[] }) {
 
   const hidden = tags.slice(fit.count);
   return (
-    <span ref={viewport} className={styles.listTags}>
+    <span ref={viewport} className={styles.tagViewport}>
       <span ref={track} className={`${styles.tags} ${styles.tagTrack}`}>
         {tags.map((tag, index) => (
           <span key={tag} className={styles.tag} data-tag-tone={tagTone(tag)} title={tag}

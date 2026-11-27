@@ -2,7 +2,7 @@ import { memo, type ComponentPropsWithRef } from 'react';
 import { TriangleAlert } from 'lucide-react';
 import type { Assignee, Card } from '@board/shared';
 import { tagTone } from '../../styles/tagTone';
-import { ListTags } from './ListTags';
+import { FittingTags } from './FittingTags';
 import styles from './CardTile.module.css';
 
 export const priorityNames = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High', URGENT: 'Urgent' } as const;
@@ -26,8 +26,9 @@ export const CardTile = memo(function CardTile({ card, assignees, pendingTooltip
     const person = assignees.get(id);
     return person ? [person] : [];
   });
-  const morePeople = people.slice(2);
-  const [firstTag, ...moreTags] = card.tags;
+  const visiblePeople = people.length <= 3 ? people : people.slice(0, 2);
+  const morePeople = people.slice(visiblePeople.length);
+  const [firstTag] = card.tags;
 
   return (
     <span className={styles.content} data-layout={layout}>
@@ -45,15 +46,12 @@ export const CardTile = memo(function CardTile({ card, assignees, pendingTooltip
             <span id={pendingTooltipId} role="tooltip" className={styles.syncTooltip}>Pending sync</span>
           </span>
         )}
-        {firstTag && (layout === 'list' ? <ListTags tags={card.tags} /> : (
-          <span className={styles.tags}>
-            <span className={styles.tag} data-tag-tone={tagTone(firstTag)} title={firstTag}>{firstTag}</span>
-            {moreTags.length > 0 && <span className={styles.moreTags} title={moreTags.join(', ')}>+{moreTags.length}</span>}
-          </span>
-        ))}
+        {card.tags.length > 1 ? <FittingTags tags={card.tags} /> : firstTag && (
+          <span className={styles.tag} data-tag-tone={tagTone(firstTag)} title={firstTag}>{firstTag}</span>
+        )}
         {people.length > 0 && (
           <span className={styles.avatars}>
-            {people.slice(0, 2).map((person) => <Avatar key={person.id} person={person} />)}
+            {visiblePeople.map((person) => <Avatar key={person.id} person={person} />)}
             {morePeople.length > 0 && (
               <span className={styles.morePeople} title={morePeople.map(({ name }) => name).join(', ')}>+{morePeople.length}</span>
             )}

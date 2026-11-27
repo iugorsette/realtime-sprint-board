@@ -154,7 +154,7 @@
 .surface:not([data-tooltip-dismissed]) button:focus-visible .syncTooltip { visibility: visible; }
 
 .content[data-layout="list"] .meta { border-radius: 0; }
-.listTags { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+.tagViewport { position: relative; flex: 1; min-width: 0; overflow: hidden; }
 .tagTrack { width: max-content; }
 .tagTrack .tag { flex: none; }
 .tagTrack .tag[data-overflow] { visibility: hidden; }
