@@ -21,3 +21,5 @@ For card links, open a card from the board with the keyboard, then use Back and 
 Check that hovering or tabbing to the link icon shows **Copy link**. Copy and keep the pointer over the icon to verify **Copied!** disappears on its own. Hover again to restore the tooltip.
 
 Switch between Board and List with the keyboard and verify that status order, visible cards and filters agree. Reload and check that the selected view persists. At a narrow viewport, open and close a list row with the keyboard and check that focus returns to the row. Add a card from a status group, move it through the card dialog, and verify it changes groups. While offline, create a card in List and confirm it shows the pending sync indicator. Check that a card link opens in either view.
+
+Check list rows with two short tags and with several long tags. Resize from a desktop to a narrow viewport and back. Verify that rows show all tags when they fit and show the correct overflow count otherwise.
