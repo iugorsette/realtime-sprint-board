@@ -26,11 +26,43 @@
 .header { padding: 23px var(--detail-gap) 0; background: color-mix(in srgb, var(--lane-surface) 35%, var(--surface)); border-radius: 11px 11px 0 0; }
 .titleRow { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
 .titleActions { display: flex; gap: 4px; flex: none; align-items: flex-start; }
-.share { display: grid; justify-items: end; gap: 4px; max-width: 140px; }
-.share button { gap: 5px; white-space: nowrap; }
-.share button:disabled { cursor: default; color: var(--muted); }
-.share span { color: var(--muted); font-size: .75rem; text-align: right; }
-.share span:empty { position: absolute; }
+.share { position: relative; display: grid; justify-items: end; gap: 4px; max-width: 140px; }
+.shareTooltip {
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-end: 0;
+  z-index: 3;
+  visibility: hidden;
+  padding: 5px 8px;
+  border-radius: 6px;
+  color: var(--masthead-text);
+  background: var(--masthead);
+  box-shadow: var(--card-shadow);
+  font-size: .72rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.share:not([data-feedback]):hover .shareTooltip,
+.share:not([data-feedback]) .icon:focus-visible + .shareTooltip,
+.share[data-feedback="copied"] .shareTooltip { visibility: visible; }
+.shareStatus {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.share[data-feedback="manual"] .shareStatus {
+  position: static;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  white-space: normal;
+  color: var(--muted);
+  font-size: .75rem;
+  text-align: right;
+}
 .share input { width: 100%; min-width: 0; padding: 4px; border: 1px solid var(--line); border-radius: var(--control-radius); }
 .titleEditor { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .titleRow h2 {
