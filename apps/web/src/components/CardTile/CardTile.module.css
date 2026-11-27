@@ -163,12 +163,12 @@
 
 .content[data-layout="list"] {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(11rem, 48%);
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 43%);
   align-items: center;
   min-height: 43px;
 }
 .content[data-layout="list"] .summary {
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2.35fr);
   align-items: center;
   gap: 8px 12px;
   padding: 8px 12px;

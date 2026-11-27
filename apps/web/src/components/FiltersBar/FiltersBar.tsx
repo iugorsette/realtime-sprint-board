@@ -54,9 +54,10 @@ export function FiltersBar({ filters, onChange, assignees, tags, columns, filter
         onChange={(search) => onChange({ ...filters, search })} onOpen={onOpenCard}
         onAssignee={(id) => onChange({ ...filters, search: '', assignee: id })} />
       <button type="button" className={styles.filterButton} data-forced={filtersInDialog || undefined}
+        aria-label={count ? `Filters, ${count} active` : 'Filters'}
         aria-haspopup="dialog" aria-expanded={dialogOpen} onClick={() => setDialogOpen(true)}>
-        <SlidersHorizontal size={16} aria-hidden="true" /> Filters
-        {count > 0 && <span className={styles.count}>{count}</span>}
+        <SlidersHorizontal size={16} aria-hidden="true" /><span className={styles.filterLabel}>Filters</span>
+        {count > 0 && <span className={styles.count} aria-hidden="true">{count}</span>}
       </button>
       {!filtersInDialog && !dialogOpen && <div className={styles.controls}>{controls}</div>}
       {count > 0 && (

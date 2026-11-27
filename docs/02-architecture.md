@@ -32,7 +32,7 @@ The card details stay open during editing. A queue sends each field change again
 
 The full-viewport card dialog handles scrolling for tall content. The card surface grows with its contents. The compact tag picker places its button or input before the selected chips in the layout and tab order, and caps the width of the control at 18 rem. It anchors a wrapping panel of suggestions to the input outside the card layout and can flip the panel above the input on short viewports.
 
-The browser stores presentation preferences in local storage. Filter state and the suggestions derived from the board are local to the current view.
+The browser stores presentation preferences in local storage. Filter state and the suggestions derived from the board are local to the current view. Desktop and mobile use the same search input and suggestion logic. At widths up to 650 pixels CSS fixes the toolbar at the bottom and reveals the search panel at the top on demand, keeping the field clear of the software keyboard.
 
 The saved view preference selects the grid or the grouped list. Both render the same memoized filtered columns, card summaries, draft composer and card dialog. The list uses native row buttons and status sections. At widths up to 600 pixels it hides description and tag previews and uses a distinct priority icon for each level. Row buttons include the priority and tags in their accessible description. The grid owns drag and drop.
 

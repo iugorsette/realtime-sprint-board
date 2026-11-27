@@ -34,10 +34,19 @@
 .toast { position: fixed; bottom: 20px; right: 20px; max-width: min(400px, calc(100vw - 40px)); display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); padding: 9px 12px; border-radius: var(--control-radius); background: var(--surface); box-shadow: var(--raised-shadow); font-size: .84rem; z-index: 4; }
 .toast button { cursor: pointer; display: grid; place-items: center; border: 0; border-radius: 5px; padding: 3px; background: transparent; }
 .toast button:hover { background: var(--surface-muted); }
+@media (max-width: 650px) {
+  .main { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
+  .toolbar {
+    position: fixed; inset: auto 0 0; z-index: 5; flex-wrap: nowrap; gap: 6px;
+    margin: 0; padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    border: 0; border-top: 1px solid var(--line); background: var(--canvas);
+  }
+  .viewPicker span { min-height: 38px; }
+  .toast { bottom: calc(72px + env(safe-area-inset-bottom)); }
+}
 @media (max-width: 570px) {
   .people { display: none; }
   .topInner { min-height: 60px; }
-  .toolbar { padding-bottom: 10px; }
   .main { padding-top: 13px; }
 }
 
