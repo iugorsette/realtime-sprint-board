@@ -5,6 +5,11 @@ import {
 
 import { cardSearchRank, normalizeSearch } from './search';
 
+const columnTones = ['backlog', 'todo', 'in-progress', 'done'] as const;
+export function columnTone(column: Column) {
+  return columnTones.find((id) => id === column.id) ?? columnTones[column.position];
+}
+
 export interface Filters {
   search: string;
   assignee: string;

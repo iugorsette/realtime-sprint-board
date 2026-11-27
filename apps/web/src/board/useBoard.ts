@@ -21,9 +21,10 @@ export function useBoard(boardId: string, store: OfflineStore, offline: boolean)
   useEffect(() => {
     if (offline) return;
     sync.start();
-    const socket: BoardSocket = io({ autoConnect: false });
+    const socket: BoardSocket = io({ autoConnect: false, transports: ['websocket'] });
     socketRef.current = socket;
     const receive = sync.receive.bind(sync);
+    const refresh = () => sync.resync();
     let joinRetry: ReturnType<typeof setTimeout> | undefined;
     const join = () => {
       clearTimeout(joinRetry);
@@ -39,22 +40,27 @@ export function useBoard(boardId: string, store: OfflineStore, offline: boolean)
     const disconnected = () => {
       clearTimeout(joinRetry);
       setConnection('offline');
-      if (!client.getQueryData(sync.options.queryKey)) sync.resync();
+      sync.resync();
     };
     setConnection('connecting');
     for (const event of cardEvents) socket.on(event, receive);
+    socket.on('board:refresh', refresh);
     socket.on('connect', join);
     socket.on('disconnect', disconnected);
     socket.on('connect_error', disconnected);
     socket.connect();
+    window.addEventListener('online', refresh);
+    const interval = window.setInterval(refresh, 30_000);
     return () => {
+      window.removeEventListener('online', refresh);
+      window.clearInterval(interval);
       clearTimeout(joinRetry);
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
       sync.stop();
     };
-  }, [boardId, client, offline, sync]);
+  }, [boardId, offline, sync]);
 
   const mutation = useMutation({
     networkMode: 'always',

@@ -6,6 +6,7 @@ import {
 } from '@board/shared';
 import { Database } from './database';
 import type { Prisma } from './generated/prisma/client';
+import { lockBoard, requireBoard } from './workspace.service';
 
 type Transaction = Prisma.TransactionClient;
 const withAssignments = {
@@ -28,8 +29,9 @@ function conflict(code: CardConflict['code'], card: Card | null) {
 export class CardsService {
   constructor(private readonly database: Database) {}
 
-  async board(id: string): Promise<Board> {
+  async board(id: string, accountId: string): Promise<Board> {
     return this.database.client.$transaction(async (tx) => {
+      await requireBoard(tx, id, accountId, 'read');
       const board = await tx.board.findUnique({
         where: { id },
         select: {
@@ -46,14 +48,6 @@ export class CardsService {
     }, { isolationLevel: 'RepeatableRead' });
   }
 
-  async exists(id: string) {
-    return (await this.database.client.board.count({ where: { id } })) > 0;
-  }
-
-  private async lockBoard(tx: Transaction, boardId: string) {
-    await tx.$queryRaw`SELECT id FROM boards WHERE id = ${boardId} FOR UPDATE`;
-  }
-
   private async commitChange(tx: Transaction, boardId: string, changes: CardChanges): Promise<BoardChange> {
     const { revision } = await tx.board.update({
       where: { id: boardId }, data: { revision: { increment: 1 } }, select: { revision: true },
@@ -68,35 +62,36 @@ export class CardsService {
   }
 
   private async withCard(
+    boardId: string,
+    accountId: string,
     id: string,
     expectedVersion: number,
-    change: (tx: Transaction, card: Card, boardId: string) => Promise<CardChanges | null>,
+    change: (tx: Transaction, card: Card) => Promise<CardChanges | null>,
   ): Promise<BoardChange | null> {
     return this.database.client.$transaction(async (tx) => {
-      const existing = await tx.card.findUnique({ where: { id }, select: { column: { select: { boardId: true } } } });
-      if (!existing) throw conflict('CARD_VERSION_CONFLICT', null);
-      const { boardId } = existing.column;
-      await this.lockBoard(tx, boardId);
-      const stored = await tx.card.findUnique({ where: { id }, include: withAssignments });
+      await lockBoard(tx, boardId);
+      await requireBoard(tx, boardId, accountId, 'edit');
+      const stored = await tx.card.findUnique({ where: { id, column: { boardId } }, include: withAssignments });
       const card = stored && toCard(stored);
       if (card?.version !== expectedVersion) throw conflict('CARD_VERSION_CONFLICT', card);
-      const result = await change(tx, card, boardId);
+      const result = await change(tx, card);
       return result && this.commitChange(tx, boardId, result);
     });
   }
 
-  async create({ assigneeIds, ...input }: CreateCard) {
+  async create(boardId: string, accountId: string, { assigneeIds, ...input }: CreateCard) {
     return this.database.client.$transaction(async (tx) => {
-      const column = await tx.column.findUnique({ where: { id: input.columnId } });
+      await lockBoard(tx, boardId);
+      await requireBoard(tx, boardId, accountId, 'edit');
+      const column = await tx.column.findUnique({ where: { id: input.columnId, boardId } });
       if (!column) throw new NotFoundException('Column not found');
-      await this.lockBoard(tx, column.boardId);
       if (input.id) {
         const { count } = await tx.cardCreation.createMany({
           data: { id: input.id, boardId: column.boardId }, skipDuplicates: true,
         });
         if (!count) {
           const receipt = await tx.cardCreation.findUnique({ where: { id: input.id } });
-          if (receipt?.boardId !== column.boardId) throw new BadRequestException('Card ID belongs to another board');
+          if (receipt?.boardId !== column.boardId) throw new BadRequestException('Card ID is unavailable');
           return null;
         }
       }
@@ -126,8 +121,8 @@ export class CardsService {
     });
   }
 
-  update(id: string, { expectedVersion, assigneeIds, ...fields }: UpdateCard) {
-    return this.withCard(id, expectedVersion, async (tx, card, boardId) => {
+  update(boardId: string, accountId: string, id: string, { expectedVersion, assigneeIds, ...fields }: UpdateCard) {
+    return this.withCard(boardId, accountId, id, expectedVersion, async (tx, card) => {
       await this.verifyAssignees(tx, boardId, assigneeIds);
       const added = assigneeIds.filter((assigneeId) => !card.assigneeIds.includes(assigneeId));
       const removed = card.assigneeIds.filter((assigneeId) => !assigneeIds.includes(assigneeId));
@@ -147,8 +142,8 @@ export class CardsService {
     });
   }
 
-  delete(id: string, expectedVersion: number) {
-    return this.withCard(id, expectedVersion, async (tx) => {
+  delete(boardId: string, accountId: string, id: string, expectedVersion: number) {
+    return this.withCard(boardId, accountId, id, expectedVersion, async (tx) => {
       await tx.card.delete({ where: { id } });
       return { cards: [], deletedCardIds: [id] };
     });
@@ -167,8 +162,8 @@ export class CardsService {
     return cards;
   }
 
-  move(id: string, { expectedVersion, targetColumnId, beforeCardId }: MoveCard) {
-    return this.withCard(id, expectedVersion, async (tx, card, boardId) => {
+  move(boardId: string, accountId: string, id: string, { expectedVersion, targetColumnId, beforeCardId }: MoveCard) {
+    return this.withCard(boardId, accountId, id, expectedVersion, async (tx, card) => {
       const column = await tx.column.findFirst({ where: { id: targetColumnId, boardId } });
       if (!column) throw new NotFoundException('Destination column not found');
       if (beforeCardId === id) throw new BadRequestException('A card cannot be its own anchor');

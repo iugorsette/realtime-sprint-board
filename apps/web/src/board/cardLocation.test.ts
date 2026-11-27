@@ -4,23 +4,22 @@ import { cardUrl, readCardId } from './useCardLocation';
 describe('card links', () => {
   const id = '15dc6da6-cab0-45c7-97ab-dc22c2214c72';
 
-  it('preserves the board address and adds a readable title', () => {
-    const url = cardUrl('https://board.example/demo/?view=board#activity', { id, title: 'Harden concurrent card moves!' });
+  it('preserves the board address and uses only the private card identifier', () => {
+    const url = cardUrl('https://board.example/demo/?boardId=my-board&view=board#activity', { id });
 
-    expect(url.href).toBe(`https://board.example/demo/?view=board&cardId=${id}&slug=harden-concurrent-card-moves#activity`);
+    expect(url.href).toBe(`https://board.example/demo/?boardId=my-board&view=board&cardId=${id}#activity`);
     expect(readCardId(url)).toBe(id);
   });
 
-  it('uses the UUID independently of duplicate or renamed titles', () => {
+  it('reads legacy links and removes the old title from new links', () => {
     const sameTitle = new URL(`https://board.example/?cardId=753e682e-1752-4dce-87b8-128b3638e398&slug=harden`);
     const oldTitle = new URL(`https://board.example/?cardId=${id}&slug=harden`);
-    const newTitle = cardUrl(oldTitle.href, { id, title: 'Réview card moves' });
+    const newLink = cardUrl(oldTitle.href, { id });
 
     expect(readCardId(sameTitle)).not.toBe(id);
     expect(readCardId(oldTitle)).toBe(id);
-    expect(readCardId(newTitle)).toBe(id);
-    expect(newTitle.searchParams.get('slug')).toBe('review-card-moves');
-    expect(readCardId(cardUrl(newTitle.href, { id }))).toBe(id);
+    expect(readCardId(newLink)).toBe(id);
+    expect(newLink.searchParams.has('slug')).toBe(false);
   });
 
   it('clears the card without changing the other parameters or fragment', () => {

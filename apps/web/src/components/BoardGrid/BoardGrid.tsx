@@ -7,6 +7,7 @@ import {
 import { Check, Circle, CircleDot, Columns3, LoaderCircle, Plus } from 'lucide-react';
 import type { Assignee, Card, Column, MoveCard } from '@board/shared';
 import { keyboardSlot, moveTarget, slotId, type Slot } from '../../board/drag';
+import { columnTone } from '../../board/model';
 import { CardSurface, CardTile, priorityNames } from '../CardTile/CardTile';
 import styles from './BoardGrid.module.css';
 
@@ -149,7 +150,8 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisab
     >
       <div ref={grid} className={styles.grid}>
         {columns.map((column) => {
-          const Icon = icons[column.id as keyof typeof icons] ?? LoaderCircle;
+          const tone = columnTone(column);
+          const Icon = (tone && icons[tone]) || LoaderCircle;
           const visibleCount = column.cards.length;
           const totalCount = columnTotals.get(column.id) ?? visibleCount;
           const filtered = visibleCount !== totalCount;
@@ -157,7 +159,7 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisab
             ? undefined
             : filtered ? 'No matching cards' : 'No cards yet';
           return (
-            <section key={column.id} className={styles.column} data-column={column.id} aria-labelledby={`column-${column.id}`}>
+            <section key={column.id} className={styles.column} data-column={tone} aria-labelledby={`column-${column.id}`}>
               <div className={styles.header}>
                 <span className={styles.columnIcon}><Icon size={15} aria-hidden="true" /></span>
                 <h2 id={`column-${column.id}`}>{column.name}</h2>

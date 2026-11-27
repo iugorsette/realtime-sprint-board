@@ -15,6 +15,78 @@ enum Priority {
   URGENT
 }
 
+enum MemberRole {
+  EDITOR
+  VIEWER
+}
+
+model Account {
+  id         String        @id @default(uuid())
+  email      String        @unique
+  name       String        @default("")
+  avatar     Bytes?
+  sessions   Session[]
+  boards     Board[]
+  memberships BoardMember[]
+  assignees  Assignee[]
+
+  @@map("accounts")
+}
+
+model Session {
+  digest    String   @id
+  accountId String   @map("account_id")
+  expiresAt DateTime @map("expires_at")
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model LoginCode {
+  email     String   @id
+  digest    String
+  attempts  Int      @default(0)
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("login_codes")
+}
+
+model AuthLimit {
+  key       String   @id
+  attempts  Int
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("auth_limits")
+}
+
+model BoardMember {
+  boardId   String     @map("board_id")
+  accountId String     @map("account_id")
+  role      MemberRole
+  board     Board      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  account   Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@id([boardId, accountId])
+  @@index([accountId])
+  @@map("board_members")
+}
+
+model BoardInvite {
+  boardId   String     @map("board_id")
+  email     String
+  role      MemberRole
+  expiresAt DateTime   @map("expires_at")
+  board     Board      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@id([boardId, email])
+  @@index([email, expiresAt])
+  @@map("board_invites")
+}
+
 model Board {
   id        String     @id
   name      String
@@ -22,7 +94,12 @@ model Board {
   columns   Column[]
   assignees Assignee[]
   creations CardCreation[]
+  ownerId   String?        @map("owner_id")
+  owner     Account?       @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  members   BoardMember[]
+  invites   BoardInvite[]
 
+  @@index([ownerId])
   @@map("boards")
 }
 
@@ -54,8 +131,12 @@ model Assignee {
   boardId  String @map("board_id")
   board    Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   assignments CardAssignee[]
+  accountId   String?        @map("account_id")
+  account     Account?       @relation(fields: [accountId], references: [id], onDelete: SetNull)
 
   @@index([boardId])
+  @@index([accountId])
+  @@unique([boardId, accountId])
   @@map("assignees")
 }
 

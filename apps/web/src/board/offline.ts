@@ -40,13 +40,14 @@ export class OfflineStore {
   private stored?: string | null;
   private state = empty;
 
-  constructor(private readonly boardId: string) {
+  constructor(private readonly boardId: string, private readonly persist = true) {
     this.stateKey = `sprint-board:offline:v1:${boardId}`;
     this.snapshotKey = `${this.stateKey}:snapshot`;
     this.replayLock = `${this.stateKey}:replay`;
   }
 
   read = () => {
+    if (!this.persist) return this.state;
     try {
       const stored = localStorage.getItem(this.stateKey);
       if (this.stored !== stored) {
@@ -65,15 +66,20 @@ export class OfflineStore {
       if (event.key === this.stateKey || event.key === null) listener();
     };
     this.listeners.add(listener);
-    window.addEventListener('storage', onStorage);
+    if (this.persist) window.addEventListener('storage', onStorage);
     return () => {
       this.listeners.delete(listener);
-      window.removeEventListener('storage', onStorage);
+      if (this.persist) window.removeEventListener('storage', onStorage);
     };
   };
 
-  update(transform: (state: OfflineState) => OfflineState) {
-    return navigator.locks.request(this.stateKey, () => {
+  async update(transform: (state: OfflineState) => OfflineState) {
+    if (!this.persist) {
+      this.state = transform(this.state);
+      for (const listener of this.listeners) listener();
+      return;
+    }
+    await navigator.locks.request(this.stateKey, () => {
       const current = this.read();
       const next = transform(current);
       if (next === current) return;
@@ -101,6 +107,7 @@ export class OfflineStore {
   }
 
   snapshot() {
+    if (!this.persist) return;
     try {
       const stored = localStorage.getItem(this.snapshotKey);
       if (stored) {
@@ -114,8 +121,9 @@ export class OfflineStore {
     }
   }
 
-  saveSnapshot(board: Board) {
-    return navigator.locks.request(this.snapshotKey, () => {
+  async saveSnapshot(board: Board) {
+    if (!this.persist) return;
+    await navigator.locks.request(this.snapshotKey, () => {
       if ((this.snapshot()?.revision ?? -1) <= board.revision) {
         localStorage.setItem(this.snapshotKey, JSON.stringify(board));
       }
@@ -149,12 +157,12 @@ export function textDisposition(change: TextChange, card: Card | undefined) {
 }
 
 export async function sendPending(board: Board, change: PendingChange, approved?: string) {
-  if (change.kind === 'create') return changeCard({ type: 'create', input: change.input });
+  if (change.kind === 'create') return changeCard(board.id, { type: 'create', input: change.input });
   const card = findCard(board, change.original.id);
   if (!card || (approved === undefined && textDisposition(change, card) !== 'send')) return;
   if (approved !== undefined && card[change.field] !== approved) return;
   const { title, description, priority, tags, assigneeIds, version } = card;
-  return changeCard({
+  return changeCard(board.id, {
     type: 'update', id: card.id,
     input: { title, description, priority, tags, assigneeIds, expectedVersion: version, [change.field]: change.value },
   });

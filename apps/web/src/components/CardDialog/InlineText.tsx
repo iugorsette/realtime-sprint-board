@@ -14,7 +14,7 @@ export function InlineText({ label, value, empty, multiline = false, disabled, h
   heading?: RefObject<HTMLHeadingElement | null>;
   onSave: (value: string, previous: string) => Promise<CardEditResult>;
   onDiscard: (value: string) => void;
-  onWorkOffline: () => Promise<boolean>;
+  onWorkOffline?: () => Promise<boolean>;
 }) {
   const [draft, setDraft] = useState<Draft>();
   const [saveState, setSaveState] = useState<SaveState>();
@@ -118,7 +118,7 @@ export function InlineText({ label, value, empty, multiline = false, disabled, h
               }}>
               {fieldChanged ? 'Apply my draft' : 'Retry save'}
             </button>
-            {saveState.status === 'error' && saveState.offlineAvailable && (
+            {onWorkOffline && saveState.status === 'error' && saveState.offlineAvailable && (
               <button type="button" className={styles.secondary} onClick={async () => {
                 if (await onWorkOffline()) closeDraft();
               }}>Keep editing offline</button>

@@ -4,6 +4,7 @@ import { prioritySchema, type Board, type BoardChange, type Card } from '@board/
 import { RequestError, type CardAction } from '../../board/api';
 import { useCardEdits, type CardEditResult } from '../../board/useCardEdits';
 import type { TextChange, TextEdit, TextField } from '../../board/offline';
+import { columnTone } from '../../board/model';
 import { ChoiceMenu } from '../ChoiceMenu/ChoiceMenu';
 import { AssigneePicker } from '../AssigneePicker/AssigneePicker';
 import { Avatar, CardSurface, priorityNames } from '../CardTile/CardTile';
@@ -35,7 +36,7 @@ type CardReview = {
   onSyncSettings: () => void;
 };
 
-export function CardDialog({ board, card, availableTags, pending, offline, syncing, savedTitle, review, onReview, onClose, onSave,
+export function CardDialog({ board, card, availableTags, pending, offline, syncing, savedTitle, readOnly = false, review, onReview, onClose, onSave,
   onSaveText, onDiscardText, onWorkOffline }: {
   board: Board;
   card: Card;
@@ -44,13 +45,14 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
   offline: boolean;
   syncing: boolean;
   savedTitle?: string;
+  readOnly?: boolean;
   review?: CardReview;
   onReview?: () => void;
   onClose: () => void;
   onSave: (action: CardAction) => Promise<BoardChange | null>;
   onSaveText: (card: Card, change: TextEdit, send: () => Promise<CardEditResult>) => Promise<CardEditResult>;
   onDiscardText: (card: Card, field: TextField, value: string) => void;
-  onWorkOffline: () => Promise<boolean>;
+  onWorkOffline?: () => Promise<boolean>;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -60,17 +62,18 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
   const [deleteError, setDeleteError] = useState('');
   const { card: displayed, edit, saving, error } = useCardEdits(board.id, card, onSave);
   const column = board.columns.find(({ id }) => id === displayed.columnId);
+  const tone = column && columnTone(column);
   const assigned = board.assignees.filter(({ id }) => displayed.assigneeIds.includes(id));
   const busy = pending || saving || syncing;
   const busyElsewhere = pending && !saving;
-  const propertiesDisabled = offline || syncing || busyElsewhere || Boolean(review);
+  const propertiesDisabled = readOnly || offline || syncing || busyElsewhere || Boolean(review);
   const titleConflict = review?.changes.find(({ field }) => field === 'title');
   const descriptionConflict = review?.changes.find(({ field }) => field === 'description');
 
   function textProps(field: TextField) {
     return {
       value: card[field],
-      disabled: busyElsewhere || syncing || Boolean(onReview),
+      disabled: readOnly || busyElsewhere || syncing || Boolean(onReview),
       onSave: (value: string, previous: string) => {
         const change = { field, value, previous };
         return onSaveText(card, change, () => edit(change));
@@ -102,7 +105,7 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
   }
 
   async function deleteCard() {
-    if (busy || offline) return;
+    if (busy || offline || readOnly) return;
     setDeleteError('');
     try {
       await onSave({ type: 'delete', id: card.id, version: card.version });
@@ -130,7 +133,7 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
       if (confirmDelete) cancelDeletion();
       else onClose();
     }}>
-      <CardSurface className={styles.surface} data-column={column?.id}>
+      <CardSurface className={styles.surface} data-column={tone}>
         <header className={styles.header}>
           <div className={styles.titleRow}>
             {review ? <h2 className={styles.titleEditor} ref={heading} tabIndex={-1}>{card.title}</h2>
@@ -156,8 +159,8 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
             <div className={styles.property}>
               <span className={styles.propertyLabel}>Status</span>
               <ChoiceMenu label="Status" selected={[displayed.columnId]} disabled={propertiesDisabled}
-                trigger={<span className={styles.column} data-column={column?.id}>{column?.name ?? 'Status'}</span>}
-                options={board.columns.map(({ id, name }) => ({ value: id, label: name, column: id }))}
+                trigger={<span className={styles.column} data-column={tone}>{column?.name ?? 'Status'}</span>}
+                options={board.columns.map((column) => ({ value: column.id, label: column.name, column: columnTone(column) }))}
                 onSelect={(value) => edit({ field: 'columnId', value })} />
             </div>
             <div className={styles.property}>
@@ -215,7 +218,7 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
             {(deleteError || error || review?.notice) && <span className={styles.error} role="alert">{deleteError || error || review?.notice}</span>}
           </div>
         )}
-        <footer className={styles.footer}>
+        {!readOnly && <footer className={styles.footer}>
           {review ? (
             <>
               <button type="button" className={styles.secondary} disabled={busy} onClick={review.onSyncSettings}>Sync settings</button>
@@ -239,7 +242,7 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
             <button ref={deleteAction} type="button" className={styles.deleteAction} disabled={busy}
               onClick={() => setConfirmDelete(true)}>Delete card</button>
           )}
-        </footer>
+        </footer>}
       </CardSurface>
     </dialog>
   );

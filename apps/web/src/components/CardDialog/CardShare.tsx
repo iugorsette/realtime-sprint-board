@@ -24,7 +24,7 @@ export function CardShare({ cardId, savedTitle }: { cardId: string; savedTitle?:
   }, [manualCopy]);
 
   async function copyLink() {
-    const link = cardUrl(window.location.href, { id: cardId, title: savedTitle }).href;
+    const link = cardUrl(window.location.href, { id: cardId }).href;
     try {
       await navigator.clipboard.writeText(link);
       setManualCopy(undefined);

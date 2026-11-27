@@ -2,7 +2,7 @@ import '@fontsource-variable/fraunces';
 import '@fontsource-variable/dm-sans';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { App } from './App';
+import { Workspace } from './workspace/Workspace';
 import './styles/tokens.css';
 import './styles/global.css';
 
@@ -12,7 +12,7 @@ const root = document.getElementById('root');
 if (root) {
   createRoot(root).render(
     <QueryClientProvider client={client}>
-      <App />
+      <Workspace />
     </QueryClientProvider>,
   );
 }

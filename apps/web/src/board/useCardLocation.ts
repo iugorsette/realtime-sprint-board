@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-type CardLink = { id: string; title?: string };
+type CardLink = { id: string };
 
 export function readCardId(url: URL): string | undefined {
   return url.searchParams.get('cardId') ?? undefined;
@@ -8,12 +8,9 @@ export function readCardId(url: URL): string | undefined {
 
 export function cardUrl(href: string, card?: CardLink): URL {
   const url = new URL(href);
-  const slug = card?.title?.normalize('NFD').replace(/\p{M}+/gu, '').toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
   if (card) url.searchParams.set('cardId', card.id);
   else url.searchParams.delete('cardId');
-  if (slug) url.searchParams.set('slug', slug);
-  else url.searchParams.delete('slug');
+  url.searchParams.delete('slug');
   return url;
 }
 

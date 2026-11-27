@@ -1,0 +1,31 @@
+.entry { width: min(420px, calc(100% - 28px)); margin: clamp(30px, 12vh, 120px) auto 24px; }
+.entry h1 { font-family: var(--font-display); font-size: 2.2rem; margin: 0 0 14px; color: var(--masthead); }
+.entry .form { padding: 21px; border: 1px solid var(--line); border-radius: var(--card-radius); background: var(--surface); box-shadow: var(--card-shadow); }
+.form { display: grid; gap: 12px; margin-block: 12px 2px; }
+.form :is(h2, h3, p) { margin: 0; }
+.form label { display: grid; gap: 4px; font-size: .88rem; font-weight: 650; }
+.form input, .form select, .workspaceBar select, .people select { width: 100%; min-width: 0; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--control-radius); background: var(--surface); }
+.form button, .workspaceBar button, .people button, .entry > button {
+  padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--control-radius);
+  background: var(--surface); color: var(--ink-soft); cursor: pointer;
+}
+.form button:hover, .workspaceBar button:hover, .people button:hover, .entry > button:hover { background: var(--surface-muted); }
+.form .primary { background: var(--masthead); color: var(--masthead-text); border-color: var(--masthead); font-weight: 650; }
+.form .primary:hover { background: var(--masthead-line); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.error { color: var(--danger); }
+.workspaceBar { background: var(--surface-muted); border-bottom: 1px solid var(--line); }
+.navigation {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: end; max-width: 1512px;
+  margin-inline: auto; padding: 7px clamp(12px, 2.5vw, 36px);
+}
+.boardSelect { display: flex; align-items: center; gap: 6px; min-width: 0; width: min(240px, 100%); font-size: .86rem; font-weight: 650; }
+.workspaceBar select { text-overflow: ellipsis; }
+.workspaceBar button { min-height: 36px; font-size: .79rem; }
+.profileButton { display: inline-flex; align-items: center; gap: 5px; margin-inline-start: auto; }
+.avatar { object-fit: cover; border-radius: 50%; }
+.pageStatus { margin: 24px clamp(12px, 2.5vw, 36px); color: var(--muted); }
+.people { display: grid; gap: 7px; list-style: none; padding: 0; }
+.people li { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; overflow-wrap: anywhere; }
+.people .actions { flex-wrap: nowrap; }
+.people select { width: auto; }
