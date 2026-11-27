@@ -1,4 +1,4 @@
-import { boardSchema, calculateMidpointPosition, type Board, type Card, type CreateCard } from '@board/shared';
+import { boardSchema, calculateMidpointPosition, DEMO_BOARD_ID, mvpCardId, type Board, type Card, type CreateCard } from '@board/shared';
 import { changeCard, RequestError } from './api';
 import { patchCards } from './model';
 
@@ -16,6 +16,17 @@ export const findCard = (board: Board, id: string) =>
 export const cardId = (change: PendingChange) => change.kind === 'create' ? change.input.id : change.original.id;
 export const textKey = (id: string, field: TextField) => `${id}:${field}`;
 
+function upgradeMvpCard(card: Card): Card {
+  const id = mvpCardId(card.id);
+  return id === card.id ? card : { ...card, id };
+}
+
+function upgradeMvpTextEdit(change: PendingChange): PendingChange {
+  if (change.kind !== 'text') return change;
+  const original = upgradeMvpCard(change.original);
+  return original === change.original ? change : { ...change, original, key: textKey(original.id, change.field) };
+}
+
 export function isConnectionError(error: unknown) {
   return error instanceof TypeError || (error instanceof DOMException && error.name === 'TimeoutError')
     || (error instanceof RequestError && error.status >= 500);
@@ -29,7 +40,7 @@ export class OfflineStore {
   private stored?: string | null;
   private state = empty;
 
-  constructor(boardId: string) {
+  constructor(private readonly boardId: string) {
     this.stateKey = `sprint-board:offline:v1:${boardId}`;
     this.snapshotKey = `${this.stateKey}:snapshot`;
     this.replayLock = `${this.stateKey}:replay`;
@@ -39,7 +50,8 @@ export class OfflineStore {
     try {
       const stored = localStorage.getItem(this.stateKey);
       if (this.stored !== stored) {
-        this.state = stored ? JSON.parse(stored) as OfflineState : empty;
+        const state = stored ? JSON.parse(stored) as OfflineState : empty;
+        this.state = this.boardId === DEMO_BOARD_ID ? { ...state, changes: state.changes.map(upgradeMvpTextEdit) } : state;
         this.stored = stored;
       }
     } catch {
@@ -91,7 +103,12 @@ export class OfflineStore {
   snapshot() {
     try {
       const stored = localStorage.getItem(this.snapshotKey);
-      if (stored) return boardSchema.parse(JSON.parse(stored));
+      if (stored) {
+        const board = boardSchema.parse(JSON.parse(stored));
+        return this.boardId === DEMO_BOARD_ID
+          ? { ...board, columns: board.columns.map((column) => ({ ...column, cards: column.cards.map(upgradeMvpCard) })) }
+          : board;
+      }
     } catch {
       // The board can still be fetched online.
     }

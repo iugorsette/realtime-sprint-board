@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { Plus, X } from 'lucide-react';
 import { prioritySchema, type Board, type BoardChange, type Card } from '@board/shared';
 import { RequestError, type CardAction } from '../../board/api';
@@ -10,6 +10,7 @@ import { Avatar, CardSurface, priorityNames } from '../CardTile/CardTile';
 import { TagPicker } from '../TagPicker/TagPicker';
 import { InlineText } from './InlineText';
 import { ConflictField, type ResolveConflict } from './ConflictField';
+import { CardShare } from './CardShare';
 import styles from './CardDialog.module.css';
 
 function closeDisclosureOnBlur({ currentTarget, relatedTarget }: FocusEvent<HTMLDetailsElement>) {
@@ -34,7 +35,7 @@ type CardReview = {
   onSyncSettings: () => void;
 };
 
-export function CardDialog({ board, card, availableTags, pending, offline, syncing, review, onReview, onClose, onSave,
+export function CardDialog({ board, card, availableTags, pending, offline, syncing, savedTitle, review, onReview, onClose, onSave,
   onSaveText, onDiscardText, onWorkOffline }: {
   board: Board;
   card: Card;
@@ -42,6 +43,7 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
   pending: boolean;
   offline: boolean;
   syncing: boolean;
+  savedTitle?: string;
   review?: CardReview;
   onReview?: () => void;
   onClose: () => void;
@@ -78,7 +80,7 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
     };
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = dialog.current;
     element?.showModal();
     heading.current?.focus({ preventScroll: true });
@@ -133,9 +135,12 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
           <div className={styles.titleRow}>
             {review ? <h2 className={styles.titleEditor} ref={heading} tabIndex={-1}>{card.title}</h2>
               : <InlineText label="Title" heading={heading} {...textProps('title')} />}
-            <button type="button" className={styles.icon} aria-label="Close card" disabled={busy} onClick={onClose}>
-              <X size={19} aria-hidden="true" />
-            </button>
+            <div className={styles.titleActions}>
+              {!review && <CardShare cardId={card.id} savedTitle={savedTitle} />}
+              <button type="button" className={styles.icon} aria-label="Close card" disabled={busy} onClick={onClose}>
+                <X size={19} aria-hidden="true" />
+              </button>
+            </div>
           </div>
           {review && (
             <p className={styles.reviewNote}>{review.deleted ? 'This card was deleted on the server.' : 'Review conflicting changes'}</p>

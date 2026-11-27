@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export * from './ordering';
+export { mvpCardId } from './mvpCardId';
 
 export const DEMO_BOARD_ID = 'sprint-board';
 export const idSchema = z.string().trim().min(1).max(100);

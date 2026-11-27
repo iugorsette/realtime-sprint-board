@@ -1,4 +1,4 @@
-import { DEMO_BOARD_ID, POSITION_STRIDE, type Priority } from '@board/shared';
+import { DEMO_BOARD_ID, mvpCardId, POSITION_STRIDE, type Priority } from '@board/shared';
 import { createDatabase } from '../src/database';
 
 const people = [
@@ -47,7 +47,7 @@ async function seed() {
           id: column.id, name: column.name, boardId: DEMO_BOARD_ID, position: columnIndex,
           cards: {
             create: column.cards.map(([title, description, priority, tags, assigneeIds], index) => ({
-              id: `${column.id}-${index + 1}`, title, description, priority, tags,
+              id: mvpCardId(`${column.id}-${index + 1}`), title, description, priority, tags,
               assignments: { create: assigneeIds.map((assigneeId) => ({ assigneeId })) },
               position: (index + 1) * POSITION_STRIDE,
             })),

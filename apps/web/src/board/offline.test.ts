@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
+import { DEMO_BOARD_ID } from '@board/shared';
 import { board, first } from './fixtures';
-import { findCard, projectPending, sendPending, textDisposition, type Creation, type TextChange } from './offline';
+import { OfflineStore, findCard, projectPending, sendPending, textDisposition, type Creation, type TextChange } from './offline';
 
 const text: TextChange = {
   kind: 'text', key: 'a:description', token: 'edit-1', original: first,
@@ -8,6 +9,25 @@ const text: TextChange = {
 };
 
 afterEach(() => vi.unstubAllGlobals());
+
+it('keeps a cached MVP card and its pending edit together after the UUID migration', () => {
+  const legacyCard = { ...first, id: 'backlog-1' };
+  const id = '753e682e-1752-4dce-87b8-128b3638e398';
+  const snapshot = { ...board, id: DEMO_BOARD_ID, columns: [{ ...board.columns[0], cards: [legacyCard] }] };
+  const legacyEdit = { ...text, key: 'backlog-1:description', original: legacyCard };
+  const entries = new Map([
+    [`sprint-board:offline:v1:${DEMO_BOARD_ID}`, JSON.stringify({ offline: true, changes: [legacyEdit] })],
+    [`sprint-board:offline:v1:${DEMO_BOARD_ID}:snapshot`, JSON.stringify(snapshot)],
+  ]);
+  vi.stubGlobal('localStorage', { getItem: (key: string) => entries.get(key) ?? null });
+
+  const store = new OfflineStore(DEMO_BOARD_ID);
+  const upgraded = store.snapshot();
+  const { changes } = store.read();
+  expect(upgraded).toBeDefined();
+  expect(changes[0]).toMatchObject({ key: `${id}:description`, original: { id } });
+  expect(findCard(projectPending(upgraded!, changes), id)?.description).toBe(text.value);
+});
 
 it('projects new cards and their pending text without altering the committed snapshot', () => {
   const id = '8343cc21-1afe-4859-9f85-3568c7c30216';
