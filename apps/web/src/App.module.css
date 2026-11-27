@@ -20,8 +20,7 @@
 .primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; border: 1px solid var(--accent); border-radius: var(--control-radius); padding: 9px 13px; background: var(--accent); color: var(--surface); font-size: .85rem; font-weight: 650; cursor: pointer; }
 .primary:hover { background: var(--accent-dark); }
 .toolbar { margin: 0 0 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; }
-.toolbarSummary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
-.viewPicker { display: inline-flex; min-inline-size: 0; gap: 2px; margin: 0; padding: 2px; border: 1px solid var(--line); border-radius: var(--control-radius); background: var(--surface); }
+.viewPicker { display: inline-flex; min-inline-size: 0; gap: 2px; margin: 0; margin-inline-start: auto; padding: 2px; border: 1px solid var(--line); border-radius: var(--control-radius); background: var(--surface); }
 .viewPicker label { position: relative; }
 .viewPicker input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
 .viewPicker span { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 31px; padding: 3px 8px; border-radius: 6px; color: var(--muted); font-size: .79rem; font-weight: 650; }
@@ -31,9 +30,6 @@
 .viewPicker input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
 .viewPicker:disabled { opacity: .65; }
 .viewPicker input:disabled { cursor: default; }
-.metrics, .progress { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .77rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.metrics > span + span { padding-left: 8px; border-left: 1px solid var(--line); }
-.progress progress { width: 64px; height: 6px; accent-color: var(--live-ink); }
 .placeholder { margin-top: 22px; color: var(--muted); }
 .toast { position: fixed; bottom: 20px; right: 20px; max-width: min(400px, calc(100vw - 40px)); display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); padding: 9px 12px; border-radius: var(--control-radius); background: var(--surface); box-shadow: var(--raised-shadow); font-size: .84rem; z-index: 4; }
 .toast button { cursor: pointer; display: grid; place-items: center; border: 0; border-radius: 5px; padding: 3px; background: transparent; }
@@ -43,7 +39,6 @@
   .topInner { min-height: 60px; }
   .toolbar { padding-bottom: 10px; }
   .main { padding-top: 13px; }
-  .toolbarSummary { width: 100%; }
 }
 
 .preferences { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--masthead-line); border-radius: var(--control-radius); background: transparent; color: var(--masthead-text); cursor: pointer; }

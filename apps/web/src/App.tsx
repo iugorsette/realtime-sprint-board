@@ -76,9 +76,6 @@ export function App() {
     }
   }
 
-  const total = board?.columns.reduce((sum, column) => sum + column.cards.length, 0) ?? 0;
-  const done = board?.columns.find(({ id }) => id === 'done')?.cards.length ?? 0;
-  const shown = columns.reduce((sum, column) => sum + column.cards.length, 0);
   const syncLabel = syncing || (!offline && query.isFetching) ? 'Syncing…'
     : offline ? 'Working offline' : connectionLabels[query.isError ? 'offline' : connection];
   const pendingLabel = sync.conflicts.length ? `${sync.conflicts.length} to review` : `${pendingCount} pending`;
@@ -147,22 +144,16 @@ export function App() {
             <div className={styles.toolbar}>
               <FiltersBar filters={filters} onChange={setFilters} assignees={board.assignees} tags={tags}
                 columns={columns} filtersInDialog={preferences.filtersInDialog} onOpenCard={openCard} />
-              <div className={styles.toolbarSummary}>
-                <div className={styles.metrics}>
-                  <span>{shown !== total ? `${shown} of ${total} cards` : `${total} ${total === 1 ? 'card' : 'cards'}`}</span>
-                  <span className={styles.progress}><progress max={total || 1} value={done} aria-label="Completed cards" />{done} done</span>
-                </div>
-                <fieldset className={styles.viewPicker} aria-label="Board view" disabled={Boolean(draft)}
-                  title={draft ? 'Finish or cancel the new card to switch views' : undefined}>
-                  {boardViews.map(({ value, label, Icon }) => (
-                    <label key={value}>
-                      <input type="radio" name="board-view" checked={preferences.view === value}
-                        onChange={() => setPreferences((current) => ({ ...current, view: value }))} />
-                      <span><Icon size={15} aria-hidden="true" />{label}</span>
-                    </label>
-                  ))}
-                </fieldset>
-              </div>
+              <fieldset className={styles.viewPicker} aria-label="Board view" disabled={Boolean(draft)}
+                title={draft ? 'Finish or cancel the new card to switch views' : undefined}>
+                {boardViews.map(({ value, label, Icon }) => (
+                  <label key={value}>
+                    <input type="radio" name="board-view" checked={preferences.view === value}
+                      onChange={() => setPreferences((current) => ({ ...current, view: value }))} />
+                    <span><Icon size={15} aria-hidden="true" />{label}</span>
+                  </label>
+                ))}
+              </fieldset>
             </div>
             {preferences.view === 'list' ? <CardList {...viewProps} />
               : <BoardGrid {...viewProps} dragDisabled={offline || syncing} onMove={move} />}
