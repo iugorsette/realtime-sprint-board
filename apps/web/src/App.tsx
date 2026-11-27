@@ -3,6 +3,7 @@ import { Columns3, Radio, Settings, X } from 'lucide-react';
 import { DEMO_BOARD_ID, type Card, type MoveCard } from '@board/shared';
 import { useOfflineBoard } from './board/useOfflineBoard';
 import { cardId, findCard } from './board/offline';
+import { useCardLocation } from './board/useCardLocation';
 import { usePreferences } from './board/preferences';
 import { PreferencesDialog } from './components/Preferences/PreferencesDialog';
 import { filterColumns } from './board/model';
@@ -24,12 +25,26 @@ export function App() {
   const [syncView, setSyncView] = useState<'sync' | 'review'>();
   const [reviewId, setReviewId] = useState<string>();
   const [filters, setFilters] = useState(emptyFilters);
-  const [selectedCardId, setSelectedCardId] = useState<string>();
   const [draftColumn, setDraftColumn] = useState<string>();
   const [notice, setNotice] = useState('');
-  const openCard = useCallback((card: Card) => setSelectedCardId(card.id), []);
-  const closeCard = useCallback(() => setSelectedCardId(undefined), []);
-  const selectedCard = selectedCardId && board ? findCard(board, selectedCardId) : undefined;
+  const closeOtherDialogs = useCallback(() => {
+    setPreferencesOpen(false);
+    setSyncView(undefined);
+  }, []);
+  const { selectedLinkId, openCardLink, dismissCard } = useCardLocation(closeOtherDialogs);
+  const openCard = useCallback((card: Card) => {
+    setNotice('');
+    openCardLink({ id: card.id, title: offline ? undefined : card.title });
+  }, [offline, openCardLink]);
+  const selectedCard = selectedLinkId && board ? findCard(board, selectedLinkId) : undefined;
+  const savedCard = selectedCard && sync.server ? findCard(sync.server, selectedCard.id) : undefined;
+  const missingCard = selectedLinkId !== undefined && !selectedCard;
+  useEffect(() => {
+    if (!missingCard || selectedLinkId === undefined || offline || syncing || mutation.isPending ||
+      !query.isFetchedAfterMount || !query.isSuccess) return;
+    dismissCard(selectedLinkId, true);
+    setNotice('This card is no longer available.');
+  }, [dismissCard, missingCard, selectedLinkId, offline, syncing, mutation.isPending, query.isFetchedAfterMount, query.isSuccess]);
   const reviewIds = [...new Set(sync.conflicts.map(cardId))];
   const activeReviewId = reviewId && reviewIds.includes(reviewId) ? reviewId : reviewIds[0];
   const reviewChanges = syncView === 'review' ? sync.conflicts.filter((change) => cardId(change) === activeReviewId) : [];
@@ -66,13 +81,13 @@ export function App() {
 
   function openReview(id?: string) {
     setReviewId(id);
-    setSelectedCardId(undefined);
+    if (selectedLinkId !== undefined) dismissCard(selectedLinkId);
     setSyncView('review');
   }
 
   function closeDetails() {
     if (reviewing) setSyncView(undefined);
-    else closeCard();
+    else if (selectedLinkId !== undefined) dismissCard(selectedLinkId);
   }
 
   return (
@@ -112,6 +127,11 @@ export function App() {
       <main className={styles.main}>
         {board ? (
           <>
+            {missingCard && (offline || connection === 'offline' || query.isError) && (
+              <p className={styles.placeholder} role="status">
+                This card isn’t in the saved board. {offline ? 'Resume sync' : 'Reconnect'} to look for it again.
+              </p>
+            )}
             <div className={styles.toolbar}>
               <FiltersBar filters={filters} onChange={setFilters} assignees={board.assignees} tags={tags}
                 columns={columns} filtersInDialog={preferences.filtersInDialog} onOpenCard={openCard} />
@@ -133,6 +153,7 @@ export function App() {
             />
             {displayedCard && <CardDialog key={displayedCard.id} board={board} card={displayedCard} availableTags={tags}
               pending={mutation.isPending} onClose={closeDetails} offline={offline} syncing={syncing}
+              savedTitle={savedCard?.title}
               onReview={!reviewing && reviewIds.includes(displayedCard.id) ? () => openReview(displayedCard.id) : undefined}
               review={reviewing ? {
                 changes: reviewChanges, deleted: !reviewCard, notice: sync.notice, onResolve: sync.resolve,

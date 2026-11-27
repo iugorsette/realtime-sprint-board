@@ -30,6 +30,9 @@ self.addEventListener('fetch', (event) => {
       }
     })());
   } else if (files.includes(request.url)) {
-    event.respondWith((async () => (await (await caches.open(cacheName)).match(request)) ?? fetch(request))());
+    event.respondWith((async () => {
+      // Bundled assets have one representation per URL, including for CORS requests.
+      return (await (await caches.open(cacheName)).match(request.url, { ignoreVary: true })) ?? fetch(request);
+    })());
   }
 });

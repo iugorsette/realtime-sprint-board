@@ -16,7 +16,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-Open [localhost:5173](http://localhost:5173). Open a second tab to see edits and moves synchronize. Drag a card from anywhere on its surface. With the card focused, press Space to pick it up, use the arrow keys to move, and press Space or Enter to drop or Escape to cancel. Click or press Enter to open the card. Use the plus button in a column to create a card inline. Enter a title, then leave the field or press Enter to create the card. Open the new card to edit its details.
+Open [localhost:5173](http://localhost:5173). Open a second tab to see edits and moves synchronize. Drag a card from anywhere on its surface. With the card focused, press Space to pick it up, use the arrow keys to move, and press Space or Enter to drop or Escape to cancel. Click or press Enter to open the card. Use **Copy link** to share a direct link to the open card. Use the plus button in a column to create a card inline. Enter a title, then leave the field or press Enter to create the card. Open the new card to edit its details.
 
 The PostgreSQL volume keeps your changes across restarts. The seed skips an existing demo and preserves edits. See `.env.example` for loopback server and database settings.
 
@@ -50,3 +50,4 @@ The API tests need a running, migrated PostgreSQL database. They create and remo
 - [Business rules](docs/01-business-rules.md) explain card ordering, version conflicts and keyboard behavior.
 - [Architecture](docs/02-architecture.md) documents HTTP and socket contracts and optimistic reconciliation.
 - [Testing strategy](docs/03-testing-strategy.md) defines critical coverage and manual validation.
+- [Post-MVP roadmap](docs/04-post-mvp-roadmap.md) records the delivered MVP and tracks subsequent releases.

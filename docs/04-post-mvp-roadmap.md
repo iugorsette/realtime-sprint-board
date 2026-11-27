@@ -1,0 +1,16 @@
+# Post-MVP roadmap
+
+## Delivered MVP
+
+The delivered MVP is recorded at commit `3c12653` on the `MVP` branch. It includes the single-board Kanban demo, card creation and editing, accessible drag and drop, search and filters, browser preferences, live synchronization, concurrent edit review, and offline creation and text editing.
+
+## Delivery workflow
+
+Work on one feature at a time, with one branch and pull request per feature. Review the changes and pass CI before merging. Keep this roadmap current and update the business rules and architecture whenever a feature changes the contract. Update the testing strategy when a new regression check is needed.
+
+## Feature sequence
+
+1. **Card sharing** (`feat/card-sharing`). Open saved cards by URL, retain selection on reload, and copy the link from the card dialog. This is the current delivery.
+2. **List view.** Add a list presentation that reuses board filters, search, and card links.
+3. **Accounts and private boards.** Identify people on their first visit, offer simple signup with a unique email as the account key, and allow profile and avatar editing. Define roles for owned and shared boards, with proposed limits of five owned boards and membership in ten boards owned by others. Specify protections for brute-force attempts, XSS, sensitive data exposure, and cross-board access through HTTP, live updates, and offline data.
+4. **Rich descriptions.** Evaluate Tiptap, Lexical, and Slate for block-style editing. Compare cost and licensing, production bundle size, and lazy loading. Check migration of existing descriptions and effects on search, offline editing, and conflict review before choosing an editor.
