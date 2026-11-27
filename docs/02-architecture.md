@@ -34,7 +34,7 @@ The full-viewport card dialog handles scrolling for tall content. The card surfa
 
 The browser stores presentation preferences in local storage. Filter state and the suggestions derived from the board are local to the current view.
 
-The saved view preference selects the grid or the grouped list. Both render the same memoized filtered columns, card summaries, draft composer and card dialog. The list uses native row buttons and status sections, with a single-line layout that truncates title and description previews to fit. The grid owns drag and drop.
+The saved view preference selects the grid or the grouped list. Both render the same memoized filtered columns, card summaries, draft composer and card dialog. The list uses native row buttons and status sections. At widths up to 600 pixels it hides description and tag previews and uses a distinct priority icon for each level. Row buttons include the priority and tags in their accessible description. The grid owns drag and drop.
 
 Card previews reserve space for priority and any visible sync or assignee indicators, then use the remaining width for tags. A resize observer recomputes the visible tags and overflow count when the available width or the tag sizes change.
 

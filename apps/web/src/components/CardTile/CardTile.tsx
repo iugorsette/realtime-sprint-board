@@ -1,11 +1,12 @@
 import { memo, type ComponentPropsWithRef } from 'react';
-import { TriangleAlert } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronsUp, Minus, TriangleAlert } from 'lucide-react';
 import type { Assignee, Card } from '@board/shared';
 import { tagTone } from '../../styles/tagTone';
 import { FittingTags } from './FittingTags';
 import styles from './CardTile.module.css';
 
 export const priorityNames = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High', URGENT: 'Urgent' } as const;
+const priorityIcons = { LOW: ArrowDown, MEDIUM: Minus, HIGH: ArrowUp, URGENT: ChevronsUp } as const;
 
 export function CardSurface({ className, ...props }: ComponentPropsWithRef<'article'>) {
   return <article {...props} className={className ? `${styles.surface} ${className}` : styles.surface} />;
@@ -29,6 +30,7 @@ export const CardTile = memo(function CardTile({ card, assignees, pendingTooltip
   const visiblePeople = people.length <= 3 ? people : people.slice(0, 2);
   const morePeople = people.slice(visiblePeople.length);
   const [firstTag] = card.tags;
+  const PriorityIcon = priorityIcons[card.priority];
 
   return (
     <span className={styles.content} data-layout={layout}>
@@ -38,7 +40,9 @@ export const CardTile = memo(function CardTile({ card, assignees, pendingTooltip
       </span>
       <span className={styles.meta}>
         <span className={styles.priority} data-priority={card.priority}>
-          <span aria-hidden="true" className={styles.priorityDot} />{priorityNames[card.priority]}
+          <span aria-hidden="true" className={styles.priorityDot} />
+          <span className={styles.priorityLabel}>{priorityNames[card.priority]}</span>
+          {layout === 'list' && <PriorityIcon className={styles.priorityIcon} size={17} strokeWidth={2.5} aria-hidden="true" />}
         </span>
         {pendingTooltipId && (
           <span className={styles.pendingSync}>
