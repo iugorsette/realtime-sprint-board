@@ -1,5 +1,7 @@
 .bar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 .searchArea { position: relative; min-width: 0; }
+.searchFields { display: flex; align-items: center; gap: 8px; }
+.searchToggle, .finishSearch { display: none; }
 .search {
   display: flex; align-items: center; gap: 7px; min-height: 37px;
   padding: 0 8px; border: 1px solid var(--line); border-radius: var(--control-radius);
@@ -33,10 +35,31 @@
 .done { padding: 6px 11px; border: 1px solid var(--accent); border-radius: var(--control-radius); background: var(--accent); color: var(--surface); cursor: pointer; }
 .done:hover { background: var(--accent-dark); }
 @media (max-width: 650px) {
-  .bar { width: 100%; }
-  .searchArea { flex: 1; }
-  .search input { width: 100%; }
-  .shortcut { display: none; }
-  .filterButton { display: flex; font-size: .78rem; }
-  .controls { display: none; }
+  .bar { flex-wrap: nowrap; }
+  .searchToggle, .filterButton, .finishSearch {
+    display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+    padding: 6px 9px; border: 1px solid var(--line); border-radius: var(--control-radius);
+    color: var(--ink-soft); background: var(--surface); cursor: pointer;
+  }
+  .searchToggle { position: relative; width: 44px; }
+  .searchToggle[data-active]::after {
+    content: ''; position: absolute; inset: 7px 7px auto auto;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  }
+  .searchToggle[aria-expanded="true"], .searchToggle:hover { background: var(--accent-pale); }
+  .searchPanel { display: none; }
+  .searchArea[data-mobile-open] .searchPanel {
+    position: fixed; inset: 0 0 auto; display: block;
+    padding: calc(12px + env(safe-area-inset-top)) 12px 12px;
+    border-bottom: 1px solid var(--line); background: var(--canvas); box-shadow: var(--raised-shadow);
+  }
+  .searchFields .search { flex: 1; min-width: 0; min-height: 44px; }
+  .search input { width: 100%; font-size: max(16px, .84rem); }
+  .searchResults { position: static; width: 100%; max-height: min(290px, 36dvh); margin-top: 8px; box-shadow: none; }
+  .shortcut, .controls, .bar > .clear { display: none; }
+  .filterButton, .finishSearch { font-size: .78rem; font-weight: 650; }
+}
+@media (max-width: 380px) {
+  .filterLabel { display: none; }
+  .filterButton { min-width: 44px; }
 }
