@@ -38,7 +38,7 @@ export function PreferencesDialog({ value, onChange, onClose }: {
           ))}
         </div>
       </fieldset>
-      <Toggle label="Show full card descriptions" checked={value.fullDescriptions}
+      <Toggle label="Show full descriptions in Board view" checked={value.fullDescriptions}
         onChange={(fullDescriptions) => onChange({ ...value, fullDescriptions })} />
       <Toggle label="Open filters in a dialog" checked={value.filtersInDialog}
         onChange={(filtersInDialog) => onChange({ ...value, filtersInDialog })} />

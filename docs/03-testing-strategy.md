@@ -23,3 +23,5 @@ Check that hovering or tabbing to the link icon shows **Copy link**. Copy and ke
 Switch between Board and List with the keyboard and verify that status order, visible cards and filters agree. Reload and check that the selected view persists. At a narrow viewport, open and close a list row with the keyboard and check that focus returns to the row. Add a card from a status group, move it through the card dialog, and verify it changes groups. While offline, create a card in List and confirm it shows the pending sync indicator. Check that a card link opens in either view.
 
 In both views, check cards with two short tags and with several long tags. Resize from a desktop to a narrow viewport and back. Verify that cards show all tags when they fit and show the correct overflow count otherwise. Check cards with two, three, and four assignees. The first two cases show every avatar, and the last shows two avatars and **+2**.
+
+Check that text and metadata in List stay on one line on desktop and mobile. Enable full descriptions and open a row with a long, multiline description to verify the full text remains available in the card dialog.
