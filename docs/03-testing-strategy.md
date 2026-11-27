@@ -26,4 +26,6 @@ In Board and desktop List, check cards with two short tags and with several long
 
 Check that List rows stay on one line on desktop and mobile. Resize below 600 pixels and check that the priority icon replaces the text, the title gains space, and description and tags remain available in the card dialog. Resize back to verify desktop previews return.
 
+In Board, verify that the priority bar sits above the title on every column and fills one to four segments by level. Check that the priority name is available on hover and in the card button's accessible description.
+
 At a narrow viewport, scroll the board and verify the bottom toolbar stays available. Open search from its icon, check input focus, choose a suggestion, and verify the card opens. Reopen search and use Done to check that the query remains applied when the input closes. Open filters from the bottom toolbar and verify the desktop input and inline filters remain available on wider screens.

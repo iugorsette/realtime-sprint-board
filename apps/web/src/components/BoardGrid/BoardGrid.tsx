@@ -7,7 +7,7 @@ import {
 import { Check, Circle, CircleDot, Columns3, LoaderCircle, Plus } from 'lucide-react';
 import type { Assignee, Card, Column, MoveCard } from '@board/shared';
 import { keyboardSlot, moveTarget, slotId, type Slot } from '../../board/drag';
-import { CardSurface, CardTile } from '../CardTile/CardTile';
+import { CardSurface, CardTile, priorityNames } from '../CardTile/CardTile';
 import styles from './BoardGrid.module.css';
 
 const icons = { backlog: Columns3, todo: Circle, 'in-progress': CircleDot, done: Check } as const;
@@ -28,8 +28,9 @@ function DragCard({ card, assignees, onOpen, pending, pendingSync }: {
   const drop = useDroppable({ id: slotId(slot), data: { slot } });
   const drag = useDraggable({ id: card.id, disabled: pending, data: { card, slot } });
   const tooltipId = useId();
+  const priorityId = `${tooltipId}-priority`;
   const [tooltipDismissed, setTooltipDismissed] = useState(false);
-  const describedBy = [drag.attributes['aria-describedby'], pendingSync && tooltipId].filter(Boolean).join(' ');
+  const describedBy = [priorityId, drag.attributes['aria-describedby'], pendingSync && tooltipId].filter(Boolean).join(' ');
   return (
     <li ref={drop.setNodeRef} className={styles.slot} data-over={drop.isOver && !drag.isDragging || undefined}>
       <CardSurface ref={drag.setNodeRef} className={styles.card} data-dragging={drag.isDragging || undefined}
@@ -48,6 +49,7 @@ function DragCard({ card, assignees, onOpen, pending, pendingSync }: {
         >
           <CardTile card={card} assignees={assignees} pendingTooltipId={pendingSync ? tooltipId : undefined} />
         </button>
+        <span id={priorityId} hidden>{priorityNames[card.priority]} priority</span>
       </CardSurface>
     </li>
   );

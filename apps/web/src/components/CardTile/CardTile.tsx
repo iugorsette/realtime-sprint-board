@@ -7,6 +7,16 @@ import styles from './CardTile.module.css';
 
 export const priorityNames = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High', URGENT: 'Urgent' } as const;
 const priorityIcons = { LOW: ArrowDown, MEDIUM: Minus, HIGH: ArrowUp, URGENT: ChevronsUp } as const;
+const prioritySteps = { LOW: 1, MEDIUM: 2, HIGH: 3, URGENT: 4 } as const;
+
+function PriorityMeter({ priority }: { priority: Card['priority'] }) {
+  const label = `${priorityNames[priority]} priority`;
+  return (
+    <span className={styles.priorityMeter} data-priority={priority} title={label} aria-hidden="true">
+      {[1, 2, 3, 4].map((step) => <span key={step} data-filled={step <= prioritySteps[priority] || undefined} />)}
+    </span>
+  );
+}
 
 export function CardSurface({ className, ...props }: ComponentPropsWithRef<'article'>) {
   return <article {...props} className={className ? `${styles.surface} ${className}` : styles.surface} />;
@@ -35,15 +45,16 @@ export const CardTile = memo(function CardTile({ card, assignees, pendingTooltip
   return (
     <span className={styles.content} data-layout={layout}>
       <span className={styles.summary}>
+        {layout === 'board' && <PriorityMeter priority={card.priority} />}
         <span className={styles.title}>{card.title}</span>
         {card.description && <span className={styles.description}>{card.description}</span>}
       </span>
       <span className={styles.meta}>
-        <span className={styles.priority} data-priority={card.priority}>
+        {layout === 'list' && <span className={styles.priority} data-priority={card.priority}>
           <span aria-hidden="true" className={styles.priorityDot} />
           <span className={styles.priorityLabel}>{priorityNames[card.priority]}</span>
-          {layout === 'list' && <PriorityIcon className={styles.priorityIcon} size={17} strokeWidth={2.5} aria-hidden="true" />}
-        </span>
+          <PriorityIcon className={styles.priorityIcon} size={17} strokeWidth={2.5} aria-hidden="true" />
+        </span>}
         {pendingTooltipId && (
           <span className={styles.pendingSync}>
             <TriangleAlert size={13} aria-hidden="true" />
