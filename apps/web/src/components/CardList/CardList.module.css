@@ -12,21 +12,9 @@
 .heading h2 { min-width: 0; margin: 0; overflow-wrap: anywhere; font-family: var(--font-display); font-size: 1.05rem; line-height: 1.2; }
 .status { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--lane-accent); }
 .count { color: var(--lane-accent); font-size: .73rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-.add, .settings {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: var(--control-radius);
-  background: transparent;
-  color: var(--lane-accent);
-  cursor: pointer;
-}
-.add { margin-inline-start: auto; }
-:is(.add, .settings):hover:enabled { border-color: var(--lane-border); background: var(--surface); }
+.groupSettings { margin-inline-start: 2px; }
+.addTask { padding: 2px 6px; }
+.newGroup { padding: 0 6px 8px; }
 .rows { margin: 0; padding: 0; list-style: none; }
 .rows .row { border: none; border-radius: 0; box-shadow: none; background: transparent; }
 .rows > li, .empty { border-top: 1px solid var(--line); }
@@ -36,3 +24,9 @@
 .rows > li:last-child .open { border-radius: 0 0 12px 8px; }
 .empty { margin: 0; padding: 12px 14px; color: var(--muted); font-size: .82rem; }
 .draft { padding: 8px 12px; }
+@media (hover: hover) and (pointer: fine) {
+  .groupSettings, .addTask, .newGroup > button { opacity: 0; pointer-events: none; }
+  .heading:hover .groupSettings, .groupSettings:focus-visible,
+  .section:hover .addTask, .addTask:focus-within,
+  .newGroup:hover > button, .newGroup:focus-within > button { opacity: 1; pointer-events: auto; }
+}

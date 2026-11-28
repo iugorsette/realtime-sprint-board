@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Headers, HttpCode, Param, Patch, Post, Res } from '@nestjs/common';
 import type { ServerResponse } from 'node:http';
-import { boardNameSchema, emailSchema, idSchema, memberRoleSchema, profileSchema } from '@board/shared';
+import { boardNameSchema, deleteBoardSchema, emailSchema, idSchema, memberRoleSchema, profileSchema, renameBoardSchema } from '@board/shared';
 import { z } from 'zod';
 import { AuthService, ClientIp, cookieDigest, CurrentUser, Public, sessionCookie, type Identity } from './auth';
 import { parse } from './board.controller';
@@ -58,6 +58,22 @@ export class WorkspaceController {
   @Post('boards')
   createBoard(@CurrentUser() user: Identity, @Body() body: unknown) {
     return this.workspace.createBoard(user.id, parse(z.strictObject({ name: boardNameSchema }), body).name);
+  }
+
+  @HttpCode(204)
+  @Patch('boards/:id')
+  async renameBoard(@CurrentUser() user: Identity, @Param('id') id: string, @Body() body: unknown) {
+    const boardId = parse(idSchema, id);
+    await this.workspace.renameBoard(boardId, user.id, parse(renameBoardSchema, body));
+    await this.gateway.refresh(boardId);
+  }
+
+  @HttpCode(204)
+  @Delete('boards/:id')
+  async deleteBoard(@CurrentUser() user: Identity, @Param('id') id: string, @Body() body: unknown) {
+    const boardId = parse(idSchema, id);
+    await this.workspace.deleteBoard(boardId, user.id, parse(deleteBoardSchema, body).expectedName);
+    await this.gateway.refresh(boardId);
   }
 
   @Get('card-links/:id')

@@ -18,7 +18,11 @@ For columns, verify that owner changes reach other tabs and that role checks rej
 
 Check that new columns default to gray and that the keyboard can select all eight colors. Change just the color, reload, and verify it appears in Board, List and the card status controls. Reject colors outside the palette and stale color edits.
 
+Verify that **Add task** starts a draft below the cards in the correct status and **Add group** opens the column form after the last group in each view. In List, hover a status and then the bottom of the list. Check that creation controls appear below the cards or groups and that the column menu appears on the status heading. Repeat with Tab and touch, and verify that a card can still be dragged below the last card in Board.
+
 On desktop and mobile, verify that the workspace has a single header and shows the saved profile picture. Check that the sidebar is visible at both widths and its toggle works with the keyboard. Create and switch boards from the sidebar and verify that the selected board is marked as current. Use the sidebar to open membership management and check that Escape returns focus to its trigger.
+
+Open board settings for an owned board from the sidebar without switching to it. Rename it and verify that its cards and links still resolve. Confirm deletion and check that the owner returns to an available board or the empty workspace, members lose access, and stale card links return 404. Verify that an editor cannot rename or delete the board.
 
 For card links, open a card from the board with the keyboard, then use Back and Forward and verify the URL and focus. Repeat from search, reload the dialog, and paste its link into a new tab. Move and rename the card from a second tab and verify the old link still opens it. From the pasted link, close the dialog and check that the board stays open. Check clipboard success and simulate denied access to verify that focus moves to the selected manual-copy field. Delete an open linked card from another tab and verify the board shows a notice and cleans the address. Reopen while offline and verify private cards do not appear. Use a second account to verify a previously opened board does not transfer between sessions.
 

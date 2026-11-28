@@ -9,6 +9,8 @@ export const emailSchema = z.string().trim().max(254).pipe(z.email()).transform(
 export const roleSchema = z.enum(['OWNER', 'EDITOR', 'VIEWER']);
 export const memberRoleSchema = roleSchema.exclude(['OWNER']);
 export const boardNameSchema = z.string().trim().min(1).max(80);
+export const deleteBoardSchema = z.strictObject({ expectedName: z.string().max(80) });
+export const renameBoardSchema = deleteBoardSchema.extend({ name: boardNameSchema });
 export const profileSchema = z.strictObject({
   name: z.string().trim().min(1).max(60),
   avatar: z.string().max(90_000).regex(/^[A-Za-z0-9+/]+={0,2}$/).nullable().optional(),
@@ -27,6 +29,7 @@ export const membersSchema = z.object({
 });
 export type Account = z.infer<typeof accountSchema>;
 export type BoardSummary = z.infer<typeof boardSummarySchema>;
+export type RenameBoard = z.infer<typeof renameBoardSchema>;
 export type MemberRole = z.infer<typeof memberRoleSchema>;
 export const prioritySchema = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
 export const assigneeSchema = z.object({

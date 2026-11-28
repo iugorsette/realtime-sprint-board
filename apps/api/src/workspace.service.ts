@@ -1,5 +1,5 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import type { ColumnColor, MemberRole } from '@board/shared';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import type { ColumnColor, MemberRole, RenameBoard } from '@board/shared';
 import { initials, publicAccount, type Identity } from './auth';
 import { Database } from './database';
 import type { Prisma } from './generated/prisma/client';
@@ -95,6 +95,25 @@ export class WorkspaceService {
       }, select: { id: true, name: true } });
       return { ...board, role: 'OWNER' as const };
     });
+  }
+
+  private changeBoard(boardId: string, accountId: string, expectedName: string,
+    write: (tx: Transaction, where: { id: string; name: string }) => Promise<{ count: number }>) {
+    return this.database.client.$transaction(async (tx) => {
+      await lockBoard(tx, boardId);
+      await requireBoard(tx, boardId, accountId, 'manage');
+      const result = await write(tx, { id: boardId, name: expectedName });
+      if (!result.count) throw new ConflictException('This board changed. Reopen its settings and try again.');
+    });
+  }
+
+  renameBoard(boardId: string, accountId: string, { name, expectedName }: RenameBoard) {
+    return this.changeBoard(boardId, accountId, expectedName, (tx, where) =>
+      tx.board.updateMany({ where, data: { name, revision: { increment: 1 } } }));
+  }
+
+  deleteBoard(boardId: string, accountId: string, expectedName: string) {
+    return this.changeBoard(boardId, accountId, expectedName, (tx, where) => tx.board.deleteMany({ where }));
   }
 
   async locateCard(cardId: string, accountId: string) {
