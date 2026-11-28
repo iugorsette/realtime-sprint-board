@@ -14,6 +14,8 @@ For concurrent text editing, open the same field in two tabs and save different 
 
 For private workspaces, verify code expiration, code reuse, throttling, session expiry and sign-out. Verify that an unrelated account cannot load board snapshots, resolve card links, change cards or join a board socket room. Check owner, editor and viewer permissions, immediate rejection of revoked access, concurrent ownership and membership limits, and profile image input validation.
 
+On desktop and mobile, verify that the workspace has a single header and shows the saved profile picture. Use the board drawer to create and switch boards. Check keyboard focus after closing it, including Escape dismissal, and use the drawer to open membership management.
+
 For card links, open a card from the board with the keyboard, then use Back and Forward and verify the URL and focus. Repeat from search, reload the dialog, and paste its link into a new tab. Move and rename the card from a second tab and verify the old link still opens it. From the pasted link, close the dialog and check that the board stays open. Check clipboard success and simulate denied access to verify that focus moves to the selected manual-copy field. Delete an open linked card from another tab and verify the board shows a notice and cleans the address. Reopen while offline and verify private cards do not appear. Use a second account to verify a previously opened board does not transfer between sessions.
 
 Check that hovering or tabbing to the link icon shows **Copy link**. Copy and keep the pointer over the icon to verify **Copied!** disappears on its own. Hover again to restore the tooltip.

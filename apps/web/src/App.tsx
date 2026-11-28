@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { Columns3, List, Radio, Settings, X } from 'lucide-react';
 import type { BoardSummary, Card, MoveCard } from '@board/shared';
 import { useOfflineBoard } from './board/useOfflineBoard';
@@ -7,7 +8,6 @@ import { useCardLocation } from './board/useCardLocation';
 import { usePreferences } from './board/preferences';
 import { PreferencesDialog } from './components/Preferences/PreferencesDialog';
 import { filterColumns } from './board/model';
-import { Avatar } from './components/CardTile/CardTile';
 import { BoardGrid } from './components/BoardGrid/BoardGrid';
 import { CardList } from './components/CardList/CardList';
 import { CardDialog } from './components/CardDialog/CardDialog';
@@ -32,7 +32,7 @@ function subscribeNetwork(listener: () => void) {
   };
 }
 
-export function App({ access }: { access: BoardSummary }) {
+export function App({ access, headerActions }: { access: BoardSummary; headerActions: HTMLElement | null }) {
   const sync = useOfflineBoard(access.id, false);
   const { query, mutation, connection, offline, syncing, pendingCount } = sync;
   const online = useSyncExternalStore(subscribeNetwork, () => navigator.onLine);
@@ -116,29 +116,21 @@ export function App({ access }: { access: BoardSummary }) {
 
   return (
     <>
-      <header className={styles.top}>
-        <div className={styles.topInner}>
-          <h1 className={styles.brand}><span className={styles.logo}><Columns3 size={18} aria-hidden="true" /></span><span className={styles.brandName}>{board?.name ?? 'Sprint Board'}</span></h1>
-          <div className={styles.topRight}>
-            <button type="button" className={styles.connection} data-connection={offline ? 'offline' : connection}
-              aria-label={syncStatus} aria-haspopup="dialog" aria-expanded={syncOpen || reviewing}
-              onClick={() => {
-                if (reviewIds.length) openReview();
-                else setSyncView('sync');
-              }}>
-              <Radio size={15} aria-hidden="true" />
-              <span role="status">{syncStatus}</span>
-            </button>
-            {board && (
-              <div className={styles.people} aria-label="Board assignees">
-                {board.assignees.map((person) => <Avatar key={person.id} person={person} />)}
-              </div>
-            )}
-            <button type="button" className={styles.preferences} aria-label="Preferences"
-              onClick={() => setPreferencesOpen(true)}><Settings size={18} aria-hidden="true" /></button>
-          </div>
-        </div>
-      </header>
+      {headerActions && createPortal(
+        <>
+          <button type="button" className={styles.connection} data-connection={offline ? 'offline' : connection}
+            aria-label={syncStatus} aria-haspopup="dialog" aria-expanded={syncOpen || reviewing}
+            onClick={() => {
+              if (reviewIds.length) openReview();
+              else setSyncView('sync');
+            }}>
+            <Radio size={15} aria-hidden="true" />
+            <span role="status">{syncStatus}</span>
+          </button>
+          <button type="button" className={styles.preferences} aria-label="Preferences"
+            onClick={() => setPreferencesOpen(true)}><Settings size={18} aria-hidden="true" /></button>
+        </>, headerActions,
+      )}
       {preferencesOpen && <PreferencesDialog value={preferences} onChange={setPreferences} onClose={() => setPreferencesOpen(false)} />}
       {syncOpen && <SyncDialog board={sync.server} offline={offline} syncing={syncing || mutation.isPending} pendingCount={pendingCount}
         notice={sync.notice} conflictCount={sync.conflicts.length} onClose={() => setSyncView(undefined)}

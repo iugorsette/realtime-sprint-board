@@ -4,6 +4,8 @@ People sign in or create an account using a verified email and a one-time code. 
 
 Boards are private. An owner can create up to five boards and manage invitations and membership. Editors can create, edit, move and delete cards. Viewers can read a board and share links to its cards. A person can join up to ten boards owned by others. Invitations are tied to a verified email address and expire after seven days. The recipient accepts them from their workspace, and can leave a shared board. Removing access does not remove existing card assignments.
 
+The header opens a side panel for switching and creating boards, managing membership, and accepting invitations. The profile button shows the signed-in person's picture when available.
+
 
 Columns sort by position then ID. Cards sort by position then ID within a column. New cards append. The column opens a title field. Enter or leaving the field creates the card with medium priority and empty details. Leaving a blank title or pressing Escape discards the draft. Open the card to edit its details. Moves identify a destination column and the card to insert before. A null anchor appends. When filtering, the next visible card is the anchor and the server uses its immediate neighbor in the full list. Dropping a card at its original visible slot is a no-op. The active card is excluded from the list before computing placement.
 

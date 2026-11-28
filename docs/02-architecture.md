@@ -10,6 +10,8 @@ NestJS sends six-digit codes through SMTP. PostgreSQL stores an HMAC of each cod
 
 Profiles use a stable account ID and a unique, normalized email. Uploaded avatars are limited to PNG bytes and dimensions. The client converts selected photos into a bounded PNG preview. Profile images are returned to their owner. Card assignee initials and display names are limited to the board.
 
+The workspace owns the shared header and board drawer. The active board renders its sync and preference controls into that header while retaining its own query cache. The board drawer uses a native dialog and exposes the current board in the board list.
+
 Read checks run against ownership or membership. Card writes check the board and role inside the same transaction as the change. The owner count and the shared membership count serialize on the affected account. New boards use four ordered columns with independent IDs. The existing board starts without an owner and is claimed only by the configured verified email.
 
 The WebSocket server checks the request origin and session before joining a board room. Before each delivery it checks that each recipient still has an active session and board membership. Membership changes request a fresh snapshot and evict unauthorized sockets. Signing out revokes the server session and disconnects its sockets.
