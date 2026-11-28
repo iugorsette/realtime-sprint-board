@@ -1,12 +1,13 @@
-import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useId, useRef, useState, type ReactNode, type Ref, type RefObject } from 'react';
 import {
   closestCenter, DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin,
   useDraggable, useDroppable, useSensor, useSensors,
   type Announcements, type KeyboardCoordinateGetter, type ScreenReaderInstructions,
 } from '@dnd-kit/core';
-import { Check, Circle, CircleDot, Columns3, Ellipsis, Plus } from 'lucide-react';
+import { Check, Circle, CircleDot, Columns3 } from 'lucide-react';
 import type { Assignee, Card, Column, MoveCard } from '@board/shared';
 import { keyboardSlot, moveTarget, slotId, type Slot } from '../../board/drag';
+import { AddGroup, AddTask, GroupSettings } from '../BoardActions/BoardActions';
 import { CardSurface, CardTile, priorityNames } from '../CardTile/CardTile';
 import styles from './BoardGrid.module.css';
 
@@ -56,10 +57,15 @@ function DragCard({ card, assignees, onOpen, pending, pendingSync }: {
   );
 }
 
-function ColumnEnd({ columnId, message }: { columnId: string; message?: string }) {
+function ColumnEnd({ columnId, message, children }: { columnId: string; message?: string; children?: ReactNode }) {
   const slot = { columnId, beforeCardId: null };
   const { isOver, setNodeRef } = useDroppable({ id: slotId(slot), data: { slot } });
-  return <li ref={setNodeRef} className={styles.end} data-over={isOver || undefined} aria-hidden={message ? undefined : true}>{message && <span>{message}</span>}</li>;
+  return (
+    <li ref={setNodeRef} className={styles.end} data-over={isOver || undefined} aria-hidden={!message && !children || undefined}>
+      {message && <p className={styles.empty}>{message}</p>}
+      {children}
+    </li>
+  );
 }
 
 function focusHandle(ref: RefObject<HTMLDivElement | null>, cardId: string) {
@@ -71,7 +77,7 @@ function focusHandle(ref: RefObject<HTMLDivElement | null>, cardId: string) {
 }
 
 export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisabled, pendingCards, onOpen, onCreate, onMove, draft,
-  onEditColumn, columnControlsDisabled }: {
+  onEditColumn, onAddGroup, addGroupButton, columnControlsDisabled }: {
   columns: Column[];
   columnTotals: ReadonlyMap<string, number>;
   draft?: { columnId: string; content: ReactNode };
@@ -80,13 +86,16 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisab
   dragDisabled: boolean;
   pendingCards: ReadonlySet<string>;
   onOpen: (card: Card) => void;
-  onCreate: (columnId: string) => void;
+  onCreate?: (columnId: string) => void;
   onMove: (card: Card, input: MoveCard) => Promise<void>;
   onEditColumn?: (column: Column) => void;
+  onAddGroup?: () => void;
+  addGroupButton: Ref<HTMLButtonElement>;
   columnControlsDisabled: boolean;
 }) {
   const [activeCard, setActiveCard] = useState<Card>();
   const grid = useRef<HTMLDivElement>(null);
+  const addDisabled = pending || Boolean(draft);
   const columnName = (id: string) => columns.find((column) => column.id === id)?.name ?? 'column';
 
   const coordinates: KeyboardCoordinateGetter = (event, { context }) => {
@@ -158,9 +167,11 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisab
           const visibleCount = column.cards.length;
           const totalCount = columnTotals.get(column.id) ?? visibleCount;
           const filtered = visibleCount !== totalCount;
-          const emptyMessage = visibleCount || draft?.columnId === column.id
+          const hasDraft = draft?.columnId === column.id;
+          const emptyMessage = visibleCount || hasDraft
             ? undefined
-            : filtered ? 'No matching cards' : 'No cards yet';
+            : filtered ? 'No matching cards' : onCreate ? undefined : 'No cards yet';
+          const addTask = onCreate && (() => onCreate(column.id));
           return (
             <section key={column.id} className={styles.column} data-column-color={column.color} aria-labelledby={`column-${column.id}`}>
               <div className={styles.header}>
@@ -169,24 +180,25 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisab
                 <span className={styles.count} aria-label={filtered ? `${visibleCount} of ${totalCount} cards` : `${totalCount} cards`}>
                   {filtered ? `${visibleCount}/${totalCount}` : totalCount}
                 </span>
-                <button type="button" onClick={() => onCreate(column.id)} className={styles.add}
-                  aria-label={`Add card to ${column.name}`} disabled={pending || Boolean(draft)}><Plus size={17} aria-hidden="true" /></button>
-                {onEditColumn && <button type="button" className={styles.settings} aria-label={`Edit column ${column.name}`}
-                  aria-haspopup="dialog" disabled={columnControlsDisabled} onClick={() => onEditColumn(column)}>
-                  <Ellipsis size={17} aria-hidden="true" />
-                </button>}
+                {onEditColumn && <GroupSettings className={styles.groupSettings} columnName={column.name}
+                  disabled={columnControlsDisabled} onClick={() => onEditColumn(column)} />}
               </div>
               <ul className={styles.cards}>
                 {column.cards.map((card) => (
                   <DragCard key={card.id} card={card} assignees={assignees}
                     onOpen={onOpen} pending={pending || dragDisabled || pendingCards.has(card.id)} pendingSync={pendingCards.has(card.id)} />
                 ))}
-                {draft?.columnId === column.id && <li className={styles.slot}>{draft.content}</li>}
-                <ColumnEnd columnId={column.id} message={emptyMessage} />
+                {hasDraft && <li className={styles.slot}>{draft.content}</li>}
+                <ColumnEnd columnId={column.id} message={emptyMessage}>
+                  {addTask && !hasDraft ? <AddTask columnName={column.name} disabled={addDisabled} onClick={addTask} /> : undefined}
+                </ColumnEnd>
               </ul>
             </section>
           );
         })}
+        {onAddGroup && <div className={styles.newGroup}>
+          <AddGroup buttonRef={addGroupButton} disabled={columnControlsDisabled} onClick={onAddGroup} />
+        </div>}
       </div>
       <DragOverlay dropAnimation={null}>
         {activeCard && (

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
-import { Columns3, List, Plus, Radio, Settings, X } from 'lucide-react';
+import { Columns3, List, Radio, Settings, X } from 'lucide-react';
 import type { BoardSummary, Card, Column, MoveCard } from '@board/shared';
 import { useOfflineBoard } from './board/useOfflineBoard';
 import { cardId, findCard } from './board/offline';
@@ -33,12 +33,20 @@ function subscribeNetwork(listener: () => void) {
   };
 }
 
-export function App({ access, headerActions }: { access: BoardSummary; headerActions: HTMLElement | null }) {
+export function App({ access, headerActions, refreshWorkspace }: {
+  access: BoardSummary;
+  headerActions: HTMLElement | null;
+  refreshWorkspace: () => void;
+}) {
   const sync = useOfflineBoard(access.id, false);
   const { query, mutation, connection, offline, syncing, pendingCount } = sync;
   const online = useSyncExternalStore(subscribeNetwork, () => navigator.onLine);
   const board = online && !query.isError ? sync.board : undefined;
   const denied = query.error instanceof RequestError && [401, 403, 404].includes(query.error.status);
+  const activeBoardName = board?.name;
+  useEffect(() => {
+    if (denied || (activeBoardName !== undefined && activeBoardName !== access.name)) refreshWorkspace();
+  }, [access.name, activeBoardName, denied, refreshWorkspace]);
   const readOnly = access.role === 'VIEWER';
   const { preferences, setPreferences } = usePreferences();
   const [preferencesOpen, setPreferencesOpen] = useState(false);
@@ -120,9 +128,10 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
       : undefined
   );
   const viewProps = { columns, columnTotals, assignees, pending: pending || readOnly, pendingCards: sync.pendingCards,
-    onOpen: openCard, onCreate: setDraftColumn, draft: readOnly ? undefined : draft,
+    onOpen: openCard, onCreate: readOnly ? undefined : setDraftColumn, draft: readOnly ? undefined : draft,
     onEditColumn: canManageColumns ? ({ id, name, color }: Column) => setColumnSettings({ id, name, color }) : undefined,
-    columnControlsDisabled };
+    onAddGroup: canManageColumns ? () => setColumnSettings('new') : undefined,
+    addGroupButton: addColumnButton, columnControlsDisabled };
 
   function openReview(id?: string) {
     setReviewId(id);
@@ -183,12 +192,6 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
                 ))}
               </fieldset>
             </div>
-            {canManageColumns && (
-              <div className={styles.columnActions}>
-                <button type="button" ref={addColumnButton} className={styles.addColumn} aria-haspopup="dialog" disabled={columnControlsDisabled}
-                  onClick={() => setColumnSettings('new')}><Plus size={16} aria-hidden="true" /> Add column</button>
-              </div>
-            )}
             {preferences.view === 'list' ? <CardList {...viewProps} />
               : <BoardGrid {...viewProps} dragDisabled={offline || syncing || readOnly} onMove={move} />}
             {canManageColumns && columnSettings && (

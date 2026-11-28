@@ -1,10 +1,11 @@
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Columns3, Inbox, LogOut, PanelLeftClose, PanelLeftOpen, Plus, UserRound, Users } from 'lucide-react';
+import { Columns3, Ellipsis, Inbox, LogOut, PanelLeftClose, PanelLeftOpen, Plus, UserRound, Users } from 'lucide-react';
 import type { Account, BoardSummary } from '@board/shared';
 import { App } from '../App';
 import { BoardDialog } from '../components/BoardDialog/BoardDialog';
 import { acceptInvite, createBoard, errorMessage, getWorkspace, locateCard, removeMember, session, signOut } from './api';
+import { BoardSettings } from './BoardSettings';
 import { Members, roleNames } from './Members';
 import { Profile } from './Profile';
 import { SignIn } from './SignIn';
@@ -34,10 +35,16 @@ function readRoute() {
   return { board: params.get('boardId'), card: params.get('cardId') };
 }
 
-function WorkspaceBoard({ access, headerActions }: { access: BoardSummary; headerActions: HTMLElement | null }) {
+function WorkspaceBoard({ access, headerActions, refreshWorkspace }: {
+  access: BoardSummary;
+  headerActions: HTMLElement | null;
+  refreshWorkspace: () => void;
+}) {
   const [client] = useState(() => new QueryClient());
   useEffect(() => () => client.clear(), [client]);
-  return <QueryClientProvider client={client}><App access={access} headerActions={headerActions} /></QueryClientProvider>;
+  return <QueryClientProvider client={client}>
+    <App access={access} headerActions={headerActions} refreshWorkspace={refreshWorkspace} />
+  </QueryClientProvider>;
 }
 
 function SignedInWorkspace({ account, onSave, onLogout }: {
@@ -53,6 +60,7 @@ function SignedInWorkspace({ account, onSave, onLogout }: {
     account.name || route.card ? undefined : 'profile',
   );
   const [name, setName] = useState('');
+  const [managedBoard, setManagedBoard] = useState<BoardSummary>();
   const [sidebarExpanded, setSidebarExpanded] = useState<boolean>();
   const compact = useSyncExternalStore(subscribeCompactSidebar, readCompactSidebar);
   const expanded = sidebarExpanded ?? (!compact || panel === 'create');
@@ -67,21 +75,23 @@ function SignedInWorkspace({ account, onSave, onLogout }: {
   const invitationLabel = `Invitations (${invitationCount})`;
   const sidebarLabel = expanded ? 'Collapse sidebar' : 'Expand sidebar';
   const SidebarIcon = expanded ? PanelLeftClose : PanelLeftOpen;
-  const afterChange = () => client.invalidateQueries({ queryKey: workspaceKey });
+  const afterChange = useCallback(() => client.invalidateQueries({ queryKey: workspaceKey }), [client]);
 
-  function chooseBoard(id: string) {
+  function chooseBoard(id: string, replace = false) {
     const url = new URL(location.href);
     if (id) url.searchParams.set('boardId', id);
     else url.searchParams.delete('boardId');
     url.searchParams.delete('cardId');
     url.searchParams.delete('slug');
-    window.history.pushState({ openedFromBoard: false }, '', url);
+    if (replace) window.history.replaceState({ openedFromBoard: false }, '', url);
+    else window.history.pushState({ openedFromBoard: false }, '', url);
     setRoute(readRoute());
   }
 
   useEffect(() => {
     function onPopState() {
       setPanel(undefined);
+      setManagedBoard(undefined);
       setRoute(readRoute());
     }
     window.addEventListener('popstate', onPopState);
@@ -165,7 +175,7 @@ function SignedInWorkspace({ account, onSave, onLogout }: {
             <nav aria-label="Your boards">
               <ul className={styles.boardList}>
                 {data.data?.boards.map((item) => (
-                  <li key={item.id}>
+                  <li key={item.id} className={styles.boardEntry} data-manageable={expanded && item.role === 'OWNER' || undefined}>
                     <button type="button" className={styles.sidebarButton} title={item.name} aria-label={item.name}
                       aria-current={item.id === board?.id ? 'page' : undefined} onClick={() => {
                         if (item.id !== board?.id) chooseBoard(item.id);
@@ -178,6 +188,15 @@ function SignedInWorkspace({ account, onSave, onLogout }: {
                         {item.name}<small>{roleNames[item.role]}</small>
                       </span>
                     </button>
+                    {expanded && item.role === 'OWNER' && (
+                      <button type="button" className={styles.boardMenu} aria-label={`Board settings for ${item.name}`}
+                        title={`Board settings for ${item.name}`} aria-haspopup="dialog" onClick={() => {
+                          setPanel(undefined);
+                          setManagedBoard(item);
+                        }}>
+                        <Ellipsis size={17} aria-hidden="true" />
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -202,11 +221,22 @@ function SignedInWorkspace({ account, onSave, onLogout }: {
         <div className={styles.boardContent}>
           {unavailable ? <p className={styles.pageStatus} role="alert">This board or card is unavailable to this account.</p>
             : data.isError ? <p className={styles.pageStatus} role="alert">Connect to the server to view your boards.</p>
-            : board ? <WorkspaceBoard key={board.id} access={board} headerActions={headerActions} />
+            : board ? <WorkspaceBoard key={board.id} access={board} headerActions={headerActions} refreshWorkspace={afterChange} />
             : data.isPending || (route.card && cardLink.isPending) ? <p className={styles.pageStatus} role="status">Loading workspace…</p>
             : <p className={styles.pageStatus}>Create a board or accept an invitation to get started.</p>}
         </div>
       </div>
+      {managedBoard && (
+        <BoardSettings board={managedBoard} onClose={() => setManagedBoard(undefined)} onRefresh={afterChange} onSaved={(action) => {
+          setManagedBoard(undefined);
+          if (action !== 'delete') return;
+          client.setQueryData<Awaited<ReturnType<typeof getWorkspace>>>(workspaceKey, (current) => current && ({
+            ...current, boards: current.boards.filter(({ id }) => id !== managedBoard.id),
+          }));
+          if (managedBoard.id === board?.id) chooseBoard('', true);
+          requestAnimationFrame(() => newBoardButton.current?.focus());
+        }} />
+      )}
       {panel === 'profile' && (
         <Profile account={account} onSave={(profile) => { onSave(profile); setPanel(undefined); }} onClose={() => setPanel(undefined)}
           onLogout={() => logout.mutate()} logoutPending={logout.isPending} logoutError={logout.error ? errorMessage(logout.error) : undefined} />

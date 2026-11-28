@@ -14,6 +14,8 @@
 .form .primary:hover { background: var(--masthead-line); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .error { color: var(--danger); }
+.form .danger { color: var(--danger); }
+.deleteMessage { overflow-wrap: anywhere; }
 .masthead { background: var(--masthead); color: var(--masthead-text); border-bottom: 3px solid var(--masthead-line); }
 .mastheadInner {
   display: flex; align-items: center; gap: 10px; min-height: 67px; max-width: 1512px;
@@ -54,6 +56,18 @@
 .sidebarBody { display: grid; gap: 8px; margin-block-start: 8px; }
 .sidebarBody .form { margin: 0; padding-inline: 4px; }
 .boardList { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.boardEntry { position: relative; }
+.boardEntry[data-manageable] .sidebarButton { padding-inline-end: 38px; }
+.boardMenu {
+  position: absolute; inset-inline-end: 4px; inset-block-start: 50%; transform: translateY(-50%);
+  display: grid; place-items: center; width: 32px; height: 36px; padding: 0; border: 0;
+  border-radius: var(--control-radius); background: transparent; color: var(--ink-soft); cursor: pointer;
+}
+.boardMenu:hover { background: var(--surface-muted); }
+@media (hover: hover) and (pointer: fine) {
+  .boardMenu { opacity: 0; pointer-events: none; }
+  .boardEntry:hover .boardMenu, .boardEntry:focus-within .boardMenu { opacity: 1; pointer-events: auto; }
+}
 .sidebarButton {
   display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 8px 10px;
   border: 1px solid transparent; border-radius: var(--control-radius); background: transparent;

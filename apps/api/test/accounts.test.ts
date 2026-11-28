@@ -98,7 +98,8 @@ it('rejects expired codes and expired sessions', async () => {
 });
 
 it('supports profile edits, role-bound invitations and the ownership limit under concurrent requests', async () => {
-  const profile = await call('/me', 'PATCH', { name: 'Board owner' }, ownerCookie);
+  const avatar = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jEAkAAAAASUVORK5CYII=';
+  const profile = await call('/me', 'PATCH', { name: 'Board owner', avatar }, ownerCookie);
   expect(profile.status).toBe(200);
   expect((await call('/me', 'PATCH', { name: 'Board owner', avatar: Buffer.from('<svg onload=alert(1)>').toString('base64') },
     ownerCookie)).status).toBe(400);
@@ -114,11 +115,50 @@ it('supports profile edits, role-bound invitations and the ownership limit under
   const workspace = await call('/workspace', 'GET', undefined, guestCookie);
   expect(await workspace.json()).toMatchObject({ boards: [], invitations: [{ id: result.id, role: 'VIEWER' }] });
   expect((await call(path + '/accept-invite', 'POST', undefined, guestCookie)).status).toBe(204);
-  expect((await call(path, 'GET', undefined, guestCookie)).status).toBe(200);
+  expect((await call('/me', 'PATCH', { name: 'Board guest', avatar }, guestCookie)).status).toBe(200);
+  const board = await call(path, 'GET', undefined, guestCookie);
+  expect(board.status).toBe(200);
+  const people = [{ id: expect.any(String), name: 'Board owner', initials: 'BO', avatar },
+    { id: expect.any(String), name: 'Board guest', initials: 'BG', avatar }];
+  expect((await board.json()).assignees).toEqual(expect.arrayContaining(people));
   expect((await call(path + '/members', 'GET', undefined, guestCookie)).status).toBe(403);
   const guest = await database.account.findUniqueOrThrow({ where: { email: guestEmail } });
   expect((await call(path + '/members/' + guest.id, 'DELETE', undefined, guestCookie)).status).toBe(204);
   expect((await call(path, 'GET', undefined, guestCookie)).status).toBe(404);
+  expect((await (await call(path, 'GET', undefined, ownerCookie)).json()).assignees).toEqual(expect.arrayContaining([
+    people[0], { id: expect.any(String), name: 'Board guest', initials: 'BG' },
+  ]));
+});
+
+it('lets an owner rename and delete a board while preserving access boundaries', async () => {
+  const host = await logIn('manage-host@' + domain);
+  const editorEmail = 'manage-editor@' + domain;
+  const editor = await logIn(editorEmail);
+  const created = await call('/boards', 'POST', { name: 'Original board' }, host);
+  expect(created.status).toBe(201);
+  const { id } = await created.json() as { id: string };
+  const path = '/boards/' + id;
+  const snapshot = await (await call(path, 'GET', undefined, host)).json() as { columns: { id: string }[] };
+  const cardCreation = await call(path + '/cards', 'POST', {
+    columnId: snapshot.columns[0].id, title: 'Card in managed board', description: '', priority: 'MEDIUM', assigneeIds: [], tags: [],
+  }, host);
+  expect(cardCreation.status).toBe(201);
+  const { change } = await cardCreation.json() as { change: { cards: { id: string }[] } };
+  const link = '/card-links/' + change.cards[0].id;
+  expect((await call(path + '/invites', 'POST', { email: editorEmail, role: 'EDITOR' }, host)).status).toBe(204);
+  expect((await call(path + '/accept-invite', 'POST', undefined, editor)).status).toBe(204);
+
+  expect((await call(path, 'PATCH', { name: 'Unavailable', expectedName: 'Original board' }, editor)).status).toBe(403);
+  expect((await call(path, 'DELETE', { expectedName: 'Original board' }, editor)).status).toBe(403);
+  expect((await call(path, 'PATCH', { name: 'Renamed board', expectedName: 'Original board' }, host)).status).toBe(204);
+  expect((await call(path, 'DELETE', { expectedName: 'Original board' }, host)).status).toBe(409);
+  expect(await (await call(link, 'GET', undefined, editor)).json()).toEqual({ boardId: id });
+  expect(await (await call(path, 'GET', undefined, editor)).json()).toMatchObject({ id, name: 'Renamed board', revision: 2 });
+
+  expect((await call(path, 'DELETE', { expectedName: 'Renamed board' }, host)).status).toBe(204);
+  expect((await call(path, 'GET', undefined, editor)).status).toBe(404);
+  expect((await call(link, 'GET', undefined, host)).status).toBe(404);
+  expect(await (await call('/workspace', 'GET', undefined, editor)).json()).toMatchObject({ boards: [] });
 });
 
 it('enforces the shared-board limit across concurrent invitation accepts', async () => {

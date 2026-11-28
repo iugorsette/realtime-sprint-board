@@ -33,9 +33,8 @@
 .header h2 { min-width: 0; font-family: var(--font-display); font-size: 1.03rem; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .columnIcon { width: 24px; height: 24px; flex: none; display: grid; place-items: center; color: var(--lane-accent); background: color-mix(in srgb, var(--surface) 58%, transparent); border-radius: 8px 7px 9px 6px; }
 .count { color: var(--lane-accent); background: color-mix(in srgb, var(--surface) 45%, transparent); border-radius: 999px; padding: 1px 6px; font-size: .72rem; font-weight: 680; font-variant-numeric: tabular-nums; }
-.add, .settings { flex: none; border: 0; border-radius: 6px; background: transparent; color: var(--lane-accent); display: grid; place-items: center; width: 32px; height: 32px; cursor: pointer; }
-.add { margin-inline-start: auto; }
-:is(.add, .settings):hover:enabled { background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.groupSettings { margin-inline-start: auto; }
+.newGroup { padding: 5px 2px; }
 .cards { margin: 0; padding: 0 8px 8px; list-style: none; display: flex; flex-direction: column; flex: 1; }
 .slot, .end { position: relative; }
 .slot { padding-bottom: 7px; }
@@ -54,13 +53,15 @@
 .card:hover, .card:focus-within { border-color: var(--lane-accent); }
 .card[data-dragging] { opacity: .37; }
 .overlay { box-shadow: var(--raised-shadow); border-color: var(--accent); cursor: grabbing; }
-.end { flex: 1; min-height: 38px; border: 1px dashed transparent; border-radius: var(--control-radius); color: var(--muted); text-align: center; padding: 12px 6px; font-size: .77rem; }
-.end:not(:empty) { padding: 0; }
-.end > span { display: grid; place-items: center; min-height: 62px; border: 1px dashed var(--lane-border); border-radius: inherit; }
+.end { flex: 1; min-height: 38px; border: 1px dashed transparent; border-radius: var(--control-radius); }
+.empty { margin: 0; padding: 10px 8px; color: var(--muted); font-size: .77rem; }
 .slot[data-over]::before, .end[data-over]::before { content: ''; position: absolute; z-index: 1; top: -3px; left: 0; right: 0; height: 2px; border-radius: 2px; background: var(--accent); pointer-events: none; }
 .end[data-over] { border-color: var(--accent); background: var(--accent-pale); }
+@media (hover: hover) and (pointer: fine) {
+  .groupSettings { opacity: 0; pointer-events: none; }
+  .header:hover .groupSettings, .groupSettings:focus-visible { opacity: 1; pointer-events: auto; }
+}
 @media (max-width: 680px) {
   .grid { scroll-snap-type: x proximity; }
-  .column { scroll-snap-align: start; }
-  .add, .settings { width: 38px; height: 38px; }
+  .column, .newGroup { scroll-snap-align: start; }
 }

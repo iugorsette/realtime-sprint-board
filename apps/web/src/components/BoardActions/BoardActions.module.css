@@ -1,0 +1,35 @@
+.addTask, .addGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 34px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: var(--lane-accent);
+  font-size: .82rem;
+  text-align: start;
+  cursor: pointer;
+}
+.addTask { inline-size: 100%; }
+.addGroup { color: var(--muted); }
+.addTask:hover:enabled, .addGroup:hover:enabled { background: var(--surface-muted); }
+.settings {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 28px;
+  block-size: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--lane-accent);
+  cursor: pointer;
+}
+.settings:hover:enabled { background: var(--surface-muted); }
+@media (hover: none), (pointer: coarse) {
+  .settings { inline-size: 36px; block-size: 36px; }
+  .addTask, .addGroup { min-block-size: 44px; }
+}

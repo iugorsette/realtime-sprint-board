@@ -1,5 +1,5 @@
 import { accountSchema, boardSummarySchema, cardLocationSchema, membersSchema, requestErrorSchema, workspaceSchema,
-  type CreateColumn, type MemberRole, type UpdateColumn } from '@board/shared';
+  type CreateColumn, type MemberRole, type RenameBoard, type UpdateColumn } from '@board/shared';
 
 class WorkspaceError extends Error {
   constructor(readonly status: number, message: string) { super(message); }
@@ -41,6 +41,8 @@ export const createBoard = async (name: string) => boardSummarySchema.parse(awai
 export const locateCard = async (id: string, signal?: AbortSignal) =>
   cardLocationSchema.parse(await request('/card-links/' + encodeURIComponent(id), 'GET', undefined, signal));
 const boardPath = (id: string) => '/boards/' + encodeURIComponent(id);
+export const renameBoard = (id: string, input: RenameBoard) => request(boardPath(id), 'PATCH', input);
+export const deleteBoard = (id: string, expectedName: string) => request(boardPath(id), 'DELETE', { expectedName });
 const columnsPath = (boardId: string) => boardPath(boardId) + '/columns';
 const columnPath = (boardId: string, id: string) => columnsPath(boardId) + '/' + encodeURIComponent(id);
 export const createColumn = (boardId: string, input: CreateColumn) => request(columnsPath(boardId), 'POST', input);

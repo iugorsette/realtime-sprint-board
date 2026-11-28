@@ -35,8 +35,14 @@ export class CardsService {
       const board = await tx.board.findUnique({
         where: { id },
         select: {
-          id: true, name: true, revision: true,
-          assignees: { orderBy: { name: 'asc' }, select: { id: true, name: true, initials: true } },
+          id: true, name: true, revision: true, ownerId: true,
+          assignees: {
+            orderBy: { name: 'asc' },
+            select: {
+              id: true, name: true, initials: true, accountId: true,
+              account: { select: { avatar: true, memberships: { where: { boardId: id }, select: { boardId: true } } } },
+            },
+          },
           columns: {
             orderBy: [{ position: 'asc' }, { id: 'asc' }],
             select: { id: true, name: true, position: true, color: true,
@@ -45,7 +51,15 @@ export class CardsService {
         },
       });
       if (!board) throw new NotFoundException('Board not found');
-      return { ...board, columns: board.columns.map((column) => ({ ...column, cards: column.cards.map(toCard) })) };
+      const { ownerId, assignees, columns, ...summary } = board;
+      return {
+        ...summary,
+        assignees: assignees.map(({ account, accountId, ...person }) => {
+          const active = accountId === ownerId || Boolean(account?.memberships.length);
+          return active && account?.avatar ? { ...person, avatar: Buffer.from(account.avatar).toString('base64') } : person;
+        }),
+        columns: columns.map((column) => ({ ...column, cards: column.cards.map(toCard) })),
+      };
     }, { isolationLevel: 'RepeatableRead' });
   }
 
