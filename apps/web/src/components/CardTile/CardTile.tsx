@@ -24,7 +24,11 @@ export function CardSurface({ className, ...props }: ComponentPropsWithRef<'arti
 
 export function Avatar({ person }: { person: Assignee }) {
   const color = [...person.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 4;
-  return <span className={styles.avatar} data-color={color} title={person.name} aria-label={person.name}>{person.initials}</span>;
+  return (
+    <span className={styles.avatar} data-color={color} title={person.name} role="img" aria-label={person.name}>
+      {person.avatar ? <img className={styles.avatarImage} src={`data:image/png;base64,${person.avatar}`} alt="" /> : person.initials}
+    </span>
+  );
 }
 
 export const CardTile = memo(function CardTile({ card, assignees, pendingTooltipId, layout = 'board' }: {

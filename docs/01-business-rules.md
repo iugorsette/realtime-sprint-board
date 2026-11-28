@@ -22,7 +22,7 @@ The toolbar switches between Board and List and remembers the last view on this 
 
 **Add task** sits below the cards in each status group and starts a draft in that group. With a mouse, List reveals this action on group hover and **Add group** at the end of the list on hover. Hover over a status heading to reveal the ellipsis for column settings. Keyboard focus reveals each action, and touch layouts keep the actions visible.
 
-Board cards and desktop list rows show as many tags as fit in the available space. A **+N** count appears when there are more tags, and hovering over it shows their names. Card previews show all assignee avatars when there are up to three people. For four or more, they show the first two people and a **+N** count for the rest.
+Board cards and desktop list rows show as many tags as fit in the available space. A **+N** count appears when there are more tags, and hovering over it shows their names. Assignee options and chips use the profile picture of active board members when available and fall back to initials. Card previews show all assignee avatars when there are up to three people. For four or more, they show the first two people and a **+N** count for the rest.
 
 By default, Board cards use a fixed preview height, with up to two lines for the title and one line for the description. The full-description preference allows previews to grow. Board cards show a four-segment priority bar above the title. Low fills one segment, Medium fills two, High fills three and Urgent fills all four. Hover over the bar to see the full priority label. List shows the priority name on desktop and an icon on narrow screens.
 

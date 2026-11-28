@@ -98,7 +98,8 @@ it('rejects expired codes and expired sessions', async () => {
 });
 
 it('supports profile edits, role-bound invitations and the ownership limit under concurrent requests', async () => {
-  const profile = await call('/me', 'PATCH', { name: 'Board owner' }, ownerCookie);
+  const avatar = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jEAkAAAAASUVORK5CYII=';
+  const profile = await call('/me', 'PATCH', { name: 'Board owner', avatar }, ownerCookie);
   expect(profile.status).toBe(200);
   expect((await call('/me', 'PATCH', { name: 'Board owner', avatar: Buffer.from('<svg onload=alert(1)>').toString('base64') },
     ownerCookie)).status).toBe(400);
@@ -114,11 +115,19 @@ it('supports profile edits, role-bound invitations and the ownership limit under
   const workspace = await call('/workspace', 'GET', undefined, guestCookie);
   expect(await workspace.json()).toMatchObject({ boards: [], invitations: [{ id: result.id, role: 'VIEWER' }] });
   expect((await call(path + '/accept-invite', 'POST', undefined, guestCookie)).status).toBe(204);
-  expect((await call(path, 'GET', undefined, guestCookie)).status).toBe(200);
+  expect((await call('/me', 'PATCH', { name: 'Board guest', avatar }, guestCookie)).status).toBe(200);
+  const board = await call(path, 'GET', undefined, guestCookie);
+  expect(board.status).toBe(200);
+  const people = [{ id: expect.any(String), name: 'Board owner', initials: 'BO', avatar },
+    { id: expect.any(String), name: 'Board guest', initials: 'BG', avatar }];
+  expect((await board.json()).assignees).toEqual(expect.arrayContaining(people));
   expect((await call(path + '/members', 'GET', undefined, guestCookie)).status).toBe(403);
   const guest = await database.account.findUniqueOrThrow({ where: { email: guestEmail } });
   expect((await call(path + '/members/' + guest.id, 'DELETE', undefined, guestCookie)).status).toBe(204);
   expect((await call(path, 'GET', undefined, guestCookie)).status).toBe(404);
+  expect((await (await call(path, 'GET', undefined, ownerCookie)).json()).assignees).toEqual(expect.arrayContaining([
+    people[0], { id: expect.any(String), name: 'Board guest', initials: 'BG' },
+  ]));
 });
 
 it('lets an owner rename and delete a board while preserving access boundaries', async () => {

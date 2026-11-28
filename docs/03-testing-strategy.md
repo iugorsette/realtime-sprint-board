@@ -14,6 +14,8 @@ For concurrent text editing, open the same field in two tabs and save different 
 
 For private workspaces, verify code expiration, code reuse, throttling, session expiry and sign-out. Verify that an unrelated account cannot load board snapshots, resolve card links, change cards or join a board socket room. Check owner, editor and viewer permissions, immediate rejection of revoked access, concurrent ownership and membership limits, and profile image input validation.
 
+Verify that an active member's saved photo appears in the assignee picker, selected chips, Board and List previews. Remove the photo or the member's access and verify the initials fallback on the next snapshot.
+
 For columns, verify that owner changes reach other tabs and that role checks reject writes by members. Race card creation against column deletion and verify that a successful card creation leaves both the card and its column intact. In Board and List, add, rename and delete a column with the keyboard. Apply a filter that hides the cards in a column and verify that deletion remains unavailable.
 
 Check that new columns default to gray and that the keyboard can select all eight colors. Change just the color, reload, and verify it appears in Board, List and the card status controls. Reject colors outside the palette and stale color edits.

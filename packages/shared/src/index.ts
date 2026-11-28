@@ -11,9 +11,10 @@ export const memberRoleSchema = roleSchema.exclude(['OWNER']);
 export const boardNameSchema = z.string().trim().min(1).max(80);
 export const deleteBoardSchema = z.strictObject({ expectedName: z.string().max(80) });
 export const renameBoardSchema = deleteBoardSchema.extend({ name: boardNameSchema });
+const avatarSchema = z.string().max(90_000).regex(/^[A-Za-z0-9+/]+={0,2}$/);
 export const profileSchema = z.strictObject({
   name: z.string().trim().min(1).max(60),
-  avatar: z.string().max(90_000).regex(/^[A-Za-z0-9+/]+={0,2}$/).nullable().optional(),
+  avatar: avatarSchema.nullable().optional(),
 });
 export const boardSummarySchema = z.object({ id: idSchema, name: boardNameSchema, role: roleSchema });
 export const accountSchema = z.object({ id: idSchema, email: emailSchema, name: z.string(), avatar: z.string().nullable() });
@@ -36,6 +37,7 @@ export const assigneeSchema = z.object({
   id: idSchema,
   name: z.string(),
   initials: z.string(),
+  avatar: avatarSchema.optional(),
 });
 
 const cardFields = z.object({
