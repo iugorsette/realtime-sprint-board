@@ -14,7 +14,7 @@ For concurrent text editing, open the same field in two tabs and save different 
 
 For private workspaces, verify code expiration, code reuse, throttling, session expiry and sign-out. Verify that an unrelated account cannot load board snapshots, resolve card links, change cards or join a board socket room. Check owner, editor and viewer permissions, immediate rejection of revoked access, concurrent ownership and membership limits, and profile image input validation.
 
-On desktop and mobile, verify that the workspace has a single header and shows the saved profile picture. Use the board drawer to create and switch boards. Check keyboard focus after closing it, including Escape dismissal, and use the drawer to open membership management.
+On desktop and mobile, verify that the workspace has a single header and shows the saved profile picture. Check that the sidebar is visible at both widths and its toggle works with the keyboard. Create and switch boards from the sidebar and verify that the selected board is marked as current. Use the sidebar to open membership management and check that Escape returns focus to its trigger.
 
 For card links, open a card from the board with the keyboard, then use Back and Forward and verify the URL and focus. Repeat from search, reload the dialog, and paste its link into a new tab. Move and rename the card from a second tab and verify the old link still opens it. From the pasted link, close the dialog and check that the board stays open. Check clipboard success and simulate denied access to verify that focus moves to the selected manual-copy field. Delete an open linked card from another tab and verify the board shows a notice and cleans the address. Reopen while offline and verify private cards do not appear. Use a second account to verify a previously opened board does not transfer between sessions.
 
@@ -26,6 +26,6 @@ In Board and desktop List, check cards with two short tags and with several long
 
 Check that List rows stay on one line on desktop and mobile. Resize below 600 pixels and check that the priority icon replaces the text, the title gains space, and description and tags remain available in the card dialog. Resize back to verify desktop previews return.
 
-In Board, verify that the priority bar sits above the title on every column and fills one to four segments by level. Check that the priority name is available on hover and in the card button's accessible description.
+In Board, verify that cards with short and long content use the same preview dimensions within the same viewport. Open a card to read its full content, then enable full descriptions and verify the long preview expands. Verify that the priority bar sits above the title on every column and fills one to four segments by level. Check that the priority name is available on hover and in the card button's accessible description.
 
 At a narrow viewport, scroll the board and verify the bottom toolbar stays available. Open search from its icon, check input focus, choose a suggestion, and verify the card opens. Reopen search and use Done to check that the query remains applied when the input closes. Open filters from the bottom toolbar and verify the desktop input and inline filters remain available on wider screens.

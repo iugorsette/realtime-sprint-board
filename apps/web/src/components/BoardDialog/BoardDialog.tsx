@@ -2,11 +2,10 @@ import { useId, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import styles from './BoardDialog.module.css';
 
-export function BoardDialog({ title, onClose, children, placement = 'center' }: {
+export function BoardDialog({ title, onClose, children }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  placement?: 'center' | 'left';
 }) {
   const heading = useId();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -17,12 +16,8 @@ export function BoardDialog({ title, onClose, children, placement = 'center' }: 
   }, []);
 
   return (
-    <dialog ref={dialog} className={styles.dialog} data-placement={placement} aria-labelledby={heading}
-      onCancel={(event) => { event.preventDefault(); onClose(); }}
-      onClick={(event) => {
-        if (placement === 'left' && event.target === event.currentTarget &&
-          event.clientX >= event.currentTarget.getBoundingClientRect().right) onClose();
-      }}>
+    <dialog ref={dialog} className={styles.dialog} aria-labelledby={heading}
+      onCancel={(event) => { event.preventDefault(); onClose(); }}>
       <div className={styles.header}>
         <h2 id={heading}>{title}</h2>
         <button type="button" className={styles.close} aria-label={`Close ${title.toLowerCase()}`} onClick={onClose}>

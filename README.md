@@ -24,7 +24,7 @@ The PostgreSQL volume keeps your changes across restarts. The seed skips an exis
 
 Switch between **Board** and **List** from the toolbar. The list groups cards by status and uses the same search, filters, and card links.
 
-Open **Boards** from the header menu to switch boards, create a board, and manage access. Open your profile from the picture at the other end of the header.
+Use the **Boards** sidebar to switch boards, create a board and manage access. Collapse or expand it with the control at the top of the sidebar. Open your profile from the picture in the header.
 
 ### Try a concurrent edit
 

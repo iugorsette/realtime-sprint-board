@@ -1,7 +1,7 @@
 .grid {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(225px, 1fr);
+  grid-auto-columns: min(15rem, 100%);
   gap: 12px;
   overflow-x: auto;
   padding: 1px 1px 12px;
@@ -59,7 +59,7 @@
 .slot[data-over]::before, .end[data-over]::before { content: ''; position: absolute; z-index: 1; top: -3px; left: 0; right: 0; height: 2px; border-radius: 2px; background: var(--accent); pointer-events: none; }
 .end[data-over] { border-color: var(--accent); background: var(--accent-pale); }
 @media (max-width: 680px) {
-  .grid { grid-auto-columns: max(235px, 80%); scroll-snap-type: x proximity; }
+  .grid { scroll-snap-type: x proximity; }
   .column { scroll-snap-align: start; }
   .add { width: 38px; height: 38px; }
 }

@@ -4,7 +4,7 @@ People sign in or create an account using a verified email and a one-time code. 
 
 Boards are private. An owner can create up to five boards and manage invitations and membership. Editors can create, edit, move and delete cards. Viewers can read a board and share links to its cards. A person can join up to ten boards owned by others. Invitations are tied to a verified email address and expire after seven days. The recipient accepts them from their workspace, and can leave a shared board. Removing access does not remove existing card assignments.
 
-The header opens a side panel for switching and creating boards, managing membership, and accepting invitations. The profile button shows the signed-in person's picture when available.
+The sidebar is always available for switching and creating boards, managing membership, and accepting invitations. Use its own control to collapse or expand it. On narrow screens it starts collapsed and returns to that state after selecting or creating a board. The profile button in the header shows the signed-in person's picture when available.
 
 
 Columns sort by position then ID. Cards sort by position then ID within a column. New cards append. The column opens a title field. Enter or leaving the field creates the card with medium priority and empty details. Leaving a blank title or pressing Escape discards the draft. Open the card to edit its details. Moves identify a destination column and the card to insert before. A null anchor appends. When filtering, the next visible card is the anchor and the server uses its immediate neighbor in the full list. Dropping a card at its original visible slot is a no-op. The active card is excluded from the list before computing placement.
@@ -21,7 +21,7 @@ The toolbar switches between Board and List and remembers the last view on this 
 
 Board cards and desktop list rows show as many tags as fit in the available space. A **+N** count appears when there are more tags, and hovering over it shows their names. Card previews show all assignee avatars when there are up to three people. For four or more, they show the first two people and a **+N** count for the rest.
 
-Board cards show a four-segment priority bar above the title. Low fills one segment, Medium fills two, High fills three and Urgent fills all four. Hover over the bar to see the full priority label. List shows the priority name on desktop and an icon on narrow screens.
+By default, Board cards use a fixed preview height, with up to two lines for the title and one line for the description. The full-description preference allows previews to grow. Board cards show a four-segment priority bar above the title. Low fills one segment, Medium fills two, High fills three and Urgent fills all four. Hover over the bar to see the full priority label. List shows the priority name on desktop and an icon on narrow screens.
 
 If the saved title or description changes while a person is editing it, the open card keeps their draft and shows the current saved text. They can keep the current text or explicitly apply their draft. If the field changes again before that write, the person reviews the new value before applying the draft again.
 

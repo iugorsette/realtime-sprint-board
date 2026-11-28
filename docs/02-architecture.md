@@ -10,7 +10,7 @@ NestJS sends six-digit codes through SMTP. PostgreSQL stores an HMAC of each cod
 
 Profiles use a stable account ID and a unique, normalized email. Uploaded avatars are limited to PNG bytes and dimensions. The client converts selected photos into a bounded PNG preview. Profile images are returned to their owner. Card assignee initials and display names are limited to the board.
 
-The workspace owns the shared header and board drawer. The active board renders its sync and preference controls into that header while retaining its own query cache. The board drawer uses a native dialog and exposes the current board in the board list.
+The workspace owns the shared header and the persistent board sidebar. The active board renders its sync and preference controls into that header while retaining its own query cache. The sidebar exposes the current board in the board list and keeps its expanded state local to the workspace. At widths up to 650 pixels, the collapsed sidebar stays beside the board and the expanded sidebar overlays it.
 
 Read checks run against ownership or membership. Card writes check the board and role inside the same transaction as the change. The owner count and the shared membership count serialize on the affected account. New boards use four ordered columns with independent IDs. The existing board starts without an owner and is claimed only by the configured verified email.
 
@@ -48,7 +48,7 @@ The browser stores presentation preferences in local storage. Filter state and t
 
 The saved view preference selects the grid or the grouped list. Both render the same memoized filtered columns, card summaries, draft composer and card dialog. The list uses native row buttons and status sections. At widths up to 600 pixels it hides description and tag previews and uses a distinct priority icon for each level. Row buttons include the priority and tags in their accessible description. The grid owns drag and drop.
 
-Board previews place the priority bar above the title and include its label in the card button's accessible description. List previews keep priority in the metadata row. Both views reserve space for any visible sync or assignee indicators and use the remaining metadata width for tags. A resize observer recomputes the visible tags and overflow count when the available width or the tag sizes change.
+Board lanes use a fixed maximum width and scroll horizontally when necessary. The Board preview and drag overlay share the same fixed default height, and the full-description preference sets a minimum height and allows expansion. Board previews place the priority bar above the title and include its label in the card button's accessible description. List previews keep priority in the metadata row. Both views reserve space for any visible sync or assignee indicators and use the remaining metadata width for tags. A resize observer recomputes the visible tags and overflow count when the available width or the tag sizes change.
 
 Private snapshots and pending writes stay in account- and board-scoped memory. The service worker caches the app shell and its assets. The client removes the legacy offline keys on startup. Create receipts persist the client UUID in the same transaction as the card and survive deletion, so an ambiguous response cannot duplicate or resurrect a card.
 
