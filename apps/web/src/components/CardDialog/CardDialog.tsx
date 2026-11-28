@@ -4,7 +4,6 @@ import { prioritySchema, type Board, type BoardChange, type Card } from '@board/
 import { RequestError, type CardAction } from '../../board/api';
 import { useCardEdits, type CardEditResult } from '../../board/useCardEdits';
 import type { TextChange, TextEdit, TextField } from '../../board/offline';
-import { columnTone } from '../../board/model';
 import { ChoiceMenu } from '../ChoiceMenu/ChoiceMenu';
 import { AssigneePicker } from '../AssigneePicker/AssigneePicker';
 import { Avatar, CardSurface, priorityNames } from '../CardTile/CardTile';
@@ -62,7 +61,6 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
   const [deleteError, setDeleteError] = useState('');
   const { card: displayed, edit, saving, error } = useCardEdits(board.id, card, onSave);
   const column = board.columns.find(({ id }) => id === displayed.columnId);
-  const tone = column && columnTone(column);
   const assigned = board.assignees.filter(({ id }) => displayed.assigneeIds.includes(id));
   const busy = pending || saving || syncing;
   const busyElsewhere = pending && !saving;
@@ -133,7 +131,7 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
       if (confirmDelete) cancelDeletion();
       else onClose();
     }}>
-      <CardSurface className={styles.surface} data-column={tone}>
+      <CardSurface className={styles.surface} data-column-color={column?.color}>
         <header className={styles.header}>
           <div className={styles.titleRow}>
             {review ? <h2 className={styles.titleEditor} ref={heading} tabIndex={-1}>{card.title}</h2>
@@ -159,8 +157,8 @@ export function CardDialog({ board, card, availableTags, pending, offline, synci
             <div className={styles.property}>
               <span className={styles.propertyLabel}>Status</span>
               <ChoiceMenu label="Status" selected={[displayed.columnId]} disabled={propertiesDisabled}
-                trigger={<span className={styles.column} data-column={tone}>{column?.name ?? 'Status'}</span>}
-                options={board.columns.map((column) => ({ value: column.id, label: column.name, column: columnTone(column) }))}
+                trigger={<span className={styles.column}>{column?.name ?? 'Status'}</span>}
+                options={board.columns.map(({ id, name, color }) => ({ value: id, label: name, columnColor: color }))}
                 onSelect={(value) => edit({ field: 'columnId', value })} />
             </div>
             <div className={styles.property}>

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
-import { Columns3, List, Radio, Settings, X } from 'lucide-react';
-import type { BoardSummary, Card, MoveCard } from '@board/shared';
+import { Columns3, List, Plus, Radio, Settings, X } from 'lucide-react';
+import type { BoardSummary, Card, Column, MoveCard } from '@board/shared';
 import { useOfflineBoard } from './board/useOfflineBoard';
 import { cardId, findCard } from './board/offline';
 import { useCardLocation } from './board/useCardLocation';
@@ -12,6 +12,7 @@ import { BoardGrid } from './components/BoardGrid/BoardGrid';
 import { CardList } from './components/CardList/CardList';
 import { CardDialog } from './components/CardDialog/CardDialog';
 import { CardComposer } from './components/CardComposer/CardComposer';
+import { ColumnDialog } from './components/ColumnDialog/ColumnDialog';
 import { emptyFilters, FiltersBar } from './components/FiltersBar/FiltersBar';
 import { SyncDialog } from './components/SyncDialog/SyncDialog';
 import { RequestError } from './board/api';
@@ -45,10 +46,13 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
   const [reviewId, setReviewId] = useState<string>();
   const [filters, setFilters] = useState(emptyFilters);
   const [draftColumn, setDraftColumn] = useState<string>();
+  const [columnSettings, setColumnSettings] = useState<Pick<Column, 'id' | 'name' | 'color'> | 'new'>();
+  const addColumnButton = useRef<HTMLButtonElement>(null);
   const [notice, setNotice] = useState('');
   const closeOtherDialogs = useCallback(() => {
     setPreferencesOpen(false);
     setSyncView(undefined);
+    setColumnSettings(undefined);
   }, []);
   const { selectedLinkId, openCardLink, dismissCard } = useCardLocation(closeOtherDialogs);
   const openCard = useCallback((card: Card) => {
@@ -77,6 +81,12 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
   const closeDraft = useCallback(() => setDraftColumn(undefined), []);
   const columns = useMemo(() => board ? filterColumns(board.columns, filters) : [], [board, filters]);
   const columnTotals = useMemo(() => new Map(board?.columns.map((column) => [column.id, column.cards.length])), [board?.columns]);
+  useEffect(() => {
+    if (board && draftColumn && !columnTotals.has(draftColumn)) {
+      closeDraft();
+      setNotice('The column for this draft was removed.');
+    }
+  }, [board, closeDraft, columnTotals, draftColumn]);
   const assignees = useMemo(() => new Map(board?.assignees.map((person) => [person.id, person])), [board?.assignees]);
   const tags = useMemo(() => [...new Set(board?.columns.flatMap((column) => column.cards.flatMap((card) => card.tags)))].sort(), [board?.columns]);
 
@@ -100,8 +110,19 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
     content: <CardComposer columnId={draftColumn} pending={pending} offline={offline} onClose={closeDraft}
       onSave={sync.create} onDiscard={sync.discardCreation} />,
   } : undefined;
+  const canManageColumns = access.role === 'OWNER';
+  const columnControlsDisabled = offline || pending || Boolean(draft);
+  const editedColumn = columnSettings === 'new' ? undefined : columnSettings;
+  const deleteBlocked = editedColumn && (
+    !columnTotals.has(editedColumn.id) ? 'This column was removed.'
+      : columnTotals.size <= 1 ? 'The board must have at least one column.'
+      : columnTotals.get(editedColumn.id) ? 'Move all cards out of this column before deleting it.'
+      : undefined
+  );
   const viewProps = { columns, columnTotals, assignees, pending: pending || readOnly, pendingCards: sync.pendingCards,
-    onOpen: openCard, onCreate: setDraftColumn, draft: readOnly ? undefined : draft };
+    onOpen: openCard, onCreate: setDraftColumn, draft: readOnly ? undefined : draft,
+    onEditColumn: canManageColumns ? ({ id, name, color }: Column) => setColumnSettings({ id, name, color }) : undefined,
+    columnControlsDisabled };
 
   function openReview(id?: string) {
     setReviewId(id);
@@ -162,8 +183,22 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
                 ))}
               </fieldset>
             </div>
+            {canManageColumns && (
+              <div className={styles.columnActions}>
+                <button type="button" ref={addColumnButton} className={styles.addColumn} aria-haspopup="dialog" disabled={columnControlsDisabled}
+                  onClick={() => setColumnSettings('new')}><Plus size={16} aria-hidden="true" /> Add column</button>
+              </div>
+            )}
             {preferences.view === 'list' ? <CardList {...viewProps} />
               : <BoardGrid {...viewProps} dragDisabled={offline || syncing || readOnly} onMove={move} />}
+            {canManageColumns && columnSettings && (
+              <ColumnDialog boardId={board.id} column={editedColumn} deleteBlocked={deleteBlocked}
+                onClose={() => setColumnSettings(undefined)} onRefresh={sync.retry} onSaved={(action) => {
+                  setColumnSettings(undefined);
+                  setNotice(action === 'delete' ? 'Column deleted.' : editedColumn ? 'Column updated.' : 'Column added.');
+                  if (action === 'delete') requestAnimationFrame(() => addColumnButton.current?.focus({ preventScroll: true }));
+                }} />
+            )}
             {displayedCard && <CardDialog key={displayedCard.id} board={board} card={displayedCard} availableTags={tags}
               pending={mutation.isPending} onClose={closeDetails} offline={offline} syncing={syncing} readOnly={readOnly}
               savedTitle={savedCard?.title}

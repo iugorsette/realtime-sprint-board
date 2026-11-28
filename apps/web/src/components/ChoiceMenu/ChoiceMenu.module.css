@@ -21,15 +21,15 @@
 .option:hover, .option:focus-visible, .option[aria-selected="true"] { background: var(--surface-muted); }
 .option:focus-visible { outline-offset: -2px; }
 .check { margin-left: auto; color: var(--accent-dark); }
-.option[data-column] { color: var(--lane-accent); }
+.option[data-column-color] { color: var(--lane-accent); }
 .option[data-priority="LOW"] { color: var(--priority-low); }
 .option[data-priority="MEDIUM"] { color: var(--priority-medium); }
 .option[data-priority="HIGH"] { color: var(--priority-high); }
 .option[data-priority="URGENT"] { color: var(--priority-urgent); }
-.option[data-column]::before, .option[data-priority]::before {
+.option[data-column-color]::before, .option[data-priority]::before {
   content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor;
 }
-.option[data-column]:hover, .option[data-column][aria-selected="true"] { background: var(--lane-surface); }
+.option[data-column-color]:hover, .option[data-column-color][aria-selected="true"] { background: var(--lane-surface); }
 @media (max-width: 420px) {
   .options { min-width: 100%; }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
+import type { ColumnColor } from '@board/shared';
 import styles from './ChoiceMenu.module.css';
 
 export interface Choice<T extends string> {
@@ -7,7 +8,7 @@ export interface Choice<T extends string> {
   label: string;
   icon?: ReactNode;
   priority?: string;
-  column?: string;
+  columnColor?: ColumnColor;
 }
 
 export function ChoiceMenu<T extends string>({ label, trigger, options, selected, onSelect, multiple = false, disabled = false }: {
@@ -79,10 +80,10 @@ export function ChoiceMenu<T extends string>({ label, trigger, options, selected
       {open && (
         <div ref={list} className={styles.options} id={id} role="listbox" aria-label={label}
           aria-multiselectable={multiple || undefined}>
-          {options.map(({ value, label: optionLabel, icon, priority, column }) => (
+          {options.map(({ value, label: optionLabel, icon, priority, columnColor }) => (
             <button key={value} type="button" role="option" tabIndex={-1}
               aria-selected={selected.includes(value)} className={styles.option}
-              data-priority={priority} data-column={column} onClick={() => {
+              data-priority={priority} data-column-color={columnColor} onClick={() => {
                 onSelect(value);
                 if (!multiple) close();
               }}>

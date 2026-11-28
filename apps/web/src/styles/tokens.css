@@ -26,10 +26,6 @@
   --priority-medium: #59477e;
   --priority-high: #87480e;
   --priority-urgent: var(--danger);
-  --lane-accent: #7d3f47;
-  --lane-header: #efc2b5;
-  --lane-surface: #f3ded2;
-  --lane-border: #d4a393;
   --tag-text: #69437b;
   --tag-background: #edddf0;
   --tag-radius: 999px;
@@ -39,27 +35,61 @@
   --raised-shadow: 0 15px 28px rgb(69 42 26 / 17%);
 }
 
-[data-column="todo"] {
+:root, [data-column-color="GRAY"] {
+  --lane-accent: #4e5159;
+  --lane-header: #d5d7dc;
+  --lane-surface: #ecedf0;
+  --lane-border: #acafb8;
+}
+
+[data-column-color="RED"] {
+  --lane-accent: #7d3f47;
+  --lane-header: #efc2b5;
+  --lane-surface: #f3ded2;
+  --lane-border: #d4a393;
+}
+
+[data-column-color="AMBER"] {
   --lane-accent: #724d16;
   --lane-header: #f3cf83;
   --lane-surface: #f6e7c0;
   --lane-border: #d9b571;
 }
 
-[data-column="in-progress"] {
+[data-column-color="PURPLE"] {
   --lane-accent: #514170;
   --lane-header: #d1c4e8;
   --lane-surface: #e9e0f4;
   --lane-border: #baa7d4;
 }
 
-[data-column="done"] {
+[data-column-color="GREEN"] {
   --lane-accent: #315940;
   --lane-header: #b8d8ad;
   --lane-surface: #dcebd1;
   --lane-border: #a1c393;
 }
 
+[data-column-color="TEAL"] {
+  --lane-accent: #1d625e;
+  --lane-header: #acd8d3;
+  --lane-surface: #dceee9;
+  --lane-border: #8bbcb6;
+}
+
+[data-column-color="BLUE"] {
+  --lane-accent: #2c527b;
+  --lane-header: #b9d0f0;
+  --lane-surface: #e0eafa;
+  --lane-border: #9db8d9;
+}
+
+[data-column-color="PINK"] {
+  --lane-accent: #813f67;
+  --lane-header: #ecc0d9;
+  --lane-surface: #f6e3ed;
+  --lane-border: #d4a0bf;
+}
 [data-tag-tone="1"] { --tag-text: #215849; --tag-background: #d7e8db; }
 [data-tag-tone="2"] { --tag-text: #7d3e23; --tag-background: #f5dcc7; }
 [data-tag-tone="3"] { --tag-text: #385379; --tag-background: #dbe5ef; }

@@ -1,4 +1,4 @@
-import { DEMO_BOARD_ID, mvpCardId, POSITION_STRIDE, type Priority } from '@board/shared';
+import { DEMO_BOARD_ID, mvpCardId, POSITION_STRIDE, type ColumnColor, type Priority } from '@board/shared';
 import { createDatabase } from '../src/database';
 
 const people = [
@@ -8,23 +8,23 @@ const people = [
   { id: 'alex', name: 'Alex Morgan', initials: 'AM' },
 ];
 
-const columns: { id: string; name: string; cards: [string, string, Priority, string[], string[]][] }[] = [
-  { id: 'backlog', name: 'Backlog', cards: [
+const columns: { id: string; name: string; color: ColumnColor; cards: [string, string, Priority, string[], string[]][] }[] = [
+  { id: 'backlog', name: 'Backlog', color: 'RED', cards: [
     ['Add a board activity feed', 'Design a compact timeline for card updates and moves.', 'MEDIUM', ['frontend'], ['maya']],
     ['Explore offline editing', 'Define expected behavior when a connection drops during a mutation.', 'LOW', ['research'], []],
     ['Profile long columns', 'Measure rendering cost when a column contains hundreds of cards.', 'MEDIUM', ['performance'], ['sam']],
   ] },
-  { id: 'todo', name: 'Todo', cards: [
+  { id: 'todo', name: 'Todo', color: 'AMBER', cards: [
     ['Improve empty states', 'Make filtered and truly empty columns easy to distinguish.', 'MEDIUM', ['design'], ['jules']],
     ['Validate reconnect behavior', 'Check that a refreshed snapshot includes changes made in another tab.', 'HIGH', ['realtime', 'testing'], ['sam']],
     ['Document the API contracts', 'Add examples of mutation responses and version conflicts.', 'LOW', ['docs'], ['alex']],
   ] },
-  { id: 'in-progress', name: 'In Progress', cards: [
+  { id: 'in-progress', name: 'In Progress', color: 'PURPLE', cards: [
     ['Harden concurrent card moves', 'Verify the first committed write wins and stale writes reconcile cleanly.', 'URGENT', ['backend', 'realtime'], ['sam', 'alex']],
     ['Polish keyboard drag and drop', 'Check focus restoration and screen reader announcements across columns.', 'HIGH', ['accessibility'], ['maya']],
     ['Review filter interactions', 'Measure how the board responds to combining tag, assignee and priority filters.', 'MEDIUM', ['frontend'], ['jules']],
   ] },
-  { id: 'done', name: 'Done', cards: [
+  { id: 'done', name: 'Done', color: 'GREEN', cards: [
     ['Bootstrap the workspace', 'Create the shared contracts and package scripts.', 'MEDIUM', ['platform'], ['alex']],
     ['Set up local PostgreSQL', 'Configure Compose health checks and a named volume.', 'HIGH', ['backend'], ['sam']],
     ['Define board design tokens', 'Set up typography, color, spacing and focus styles.', 'LOW', ['design'], ['jules']],
@@ -44,7 +44,7 @@ async function seed() {
     for (const [columnIndex, column] of columns.entries()) {
       await tx.column.create({
         data: {
-          id: column.id, name: column.name, boardId: DEMO_BOARD_ID, position: columnIndex,
+          id: column.id, name: column.name, color: column.color, boardId: DEMO_BOARD_ID, position: columnIndex,
           cards: {
             create: column.cards.map(([title, description, priority, tags, assigneeIds], index) => ({
               id: mvpCardId(`${column.id}-${index + 1}`), title, description, priority, tags,
