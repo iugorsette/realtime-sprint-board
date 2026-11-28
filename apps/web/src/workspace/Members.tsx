@@ -81,7 +81,7 @@ export function Members({ board, onClose }: { board: BoardSummary; onClose: () =
             <h3>Invite by email</h3>
             <p>The invitation appears in the recipient’s workspace after they sign in.</p>
             <label>Email<input type="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-            <label>Role<select value={role} onChange={(event) => setRole(memberRoleSchema.parse(event.target.value))}>
+            <label>Role<select aria-label="Invitation role" value={role} onChange={(event) => setRole(memberRoleSchema.parse(event.target.value))}>
               <option value="EDITOR">Editor</option>
               <option value="VIEWER">Viewer</option>
             </select></label>

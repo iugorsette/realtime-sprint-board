@@ -86,6 +86,17 @@ it('locks a code after repeated mistakes', async () => {
   expect(await database.account.count({ where: { email } })).toBe(0);
 });
 
+it('rejects expired codes and expired sessions', async () => {
+  const email = 'expiry@' + domain;
+  expect((await call('/auth/code', 'POST', { email })).status).toBe(204);
+  await database.loginCode.update({ where: { email }, data: { expiresAt: new Date(0) } });
+  expect((await call('/auth/verify', 'POST', { email, code: codes.get(email) })).status).toBe(401);
+  const sessionEmail = 'expired-session@' + domain;
+  const cookie = await logIn(sessionEmail);
+  await database.session.updateMany({ where: { account: { email: sessionEmail } }, data: { expiresAt: new Date(0) } });
+  expect((await call('/me', 'GET', undefined, cookie)).status).toBe(401);
+});
+
 it('supports profile edits, role-bound invitations and the ownership limit under concurrent requests', async () => {
   const profile = await call('/me', 'PATCH', { name: 'Board owner' }, ownerCookie);
   expect(profile.status).toBe(200);
