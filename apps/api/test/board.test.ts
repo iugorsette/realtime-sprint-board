@@ -26,6 +26,7 @@ const ownerCookie = 'sprint_board_session=' + randomBytes(32).toString('base64ur
 const outsiderCookie = 'sprint_board_session=' + randomBytes(32).toString('base64url');
 const viewerCookie = 'sprint_board_session=' + randomBytes(32).toString('base64url');
 const cards = '/boards/' + boardId + '/cards';
+const columns = '/boards/' + boardId + '/columns';
 const fields = { title: 'Test card', description: '', priority: 'MEDIUM', tags: ['testing'], assigneeIds: [] };
 let app: INestApplication;
 let url: string;
@@ -109,7 +110,50 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await db.card.deleteMany({ where: { columnId: { in: [first, second] } } });
+  await db.column.deleteMany({ where: { boardId, id: { notIn: [first, second] } } });
   await db.board.update({ where: { id: boardId }, data: { revision: 0 } });
+});
+
+it('appends and renames columns by ID, refreshes collaborators, and deletes empty columns', async () => {
+  const subscriber = await connect(boardId, viewerCookie);
+  try {
+    const refreshed = new Promise<void>((resolve) => subscriber.once('board:refresh', resolve));
+    expect((await request(columns, 'POST', { name: '  Testing  ' })).status).toBe(204);
+    await refreshed;
+    const created = (await snapshot()).columns.at(-1)!;
+    expect(created).toMatchObject({ name: 'Testing', position: 2, cards: [] });
+    expect((await request(columns, 'POST', { name: 'Testing' })).status).toBe(409);
+    const path = `${columns}/${created.id}`;
+    expect((await request(path, 'PATCH', { name: 'Verification', expectedName: 'Testing' })).status).toBe(204);
+    expect((await request(path, 'DELETE', { expectedName: 'Testing' })).status).toBe(409);
+    expect(await snapshot()).toMatchObject({ revision: 2, columns: [{ id: first }, { id: second }, { id: created.id, name: 'Verification' }] });
+    expect((await request(path, 'DELETE', { expectedName: 'Verification' })).status).toBe(204);
+    expect(await snapshot()).toMatchObject({ revision: 3, columns: [{ id: first }, { id: second }] });
+  } finally {
+    subscriber.disconnect();
+  }
+});
+
+it('restricts column writes to the owner and preserves cards when deletion races with creation', async () => {
+  expect((await request(columns, 'POST', { name: 'Forbidden' }, undefined, viewerCookie)).status).toBe(403);
+  expect((await request(columns, 'POST', { name: 'Hidden' }, undefined, outsiderCookie)).status).toBe(404);
+  expect((await request(columns, 'POST', { name: ' ' })).status).toBe(400);
+  try {
+    const [creation, deletion] = await Promise.all([
+      request(cards, 'POST', { ...fields, columnId: first }),
+      request(`${columns}/${first}`, 'DELETE', { expectedName: 'First' }),
+    ]);
+    if (creation.status === 201) {
+      expect(deletion.status).toBe(409);
+      expect((await snapshot()).columns[0].cards).toHaveLength(1);
+    } else {
+      expect(creation.status).toBe(404);
+      expect(deletion.status).toBe(204);
+      expect((await request(`${columns}/${second}`, 'DELETE', { expectedName: 'Second' })).status).toBe(409);
+    }
+  } finally {
+    await db.column.upsert({ where: { id: first }, update: {}, create: { id: first, boardId, name: 'First', position: 0 } });
+  }
 });
 
 it('persists CRUD with incrementing revisions and a board snapshot', async () => {

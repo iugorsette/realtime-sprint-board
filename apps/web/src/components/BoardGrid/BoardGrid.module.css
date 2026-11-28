@@ -33,8 +33,9 @@
 .header h2 { min-width: 0; font-family: var(--font-display); font-size: 1.03rem; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .columnIcon { width: 24px; height: 24px; flex: none; display: grid; place-items: center; color: var(--lane-accent); background: color-mix(in srgb, var(--surface) 58%, transparent); border-radius: 8px 7px 9px 6px; }
 .count { color: var(--lane-accent); background: color-mix(in srgb, var(--surface) 45%, transparent); border-radius: 999px; padding: 1px 6px; font-size: .72rem; font-weight: 680; font-variant-numeric: tabular-nums; }
-.add { margin-left: auto; flex: none; border: 0; border-radius: 6px; background: transparent; color: var(--lane-accent); display: grid; place-items: center; width: 32px; height: 32px; cursor: pointer; }
-.add:hover { background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.add, .settings { flex: none; border: 0; border-radius: 6px; background: transparent; color: var(--lane-accent); display: grid; place-items: center; width: 32px; height: 32px; cursor: pointer; }
+.add { margin-inline-start: auto; }
+:is(.add, .settings):hover:enabled { background: color-mix(in srgb, var(--surface) 70%, transparent); }
 .cards { margin: 0; padding: 0 8px 8px; list-style: none; display: flex; flex-direction: column; flex: 1; }
 .slot, .end { position: relative; }
 .slot { padding-bottom: 7px; }
@@ -61,5 +62,5 @@
 @media (max-width: 680px) {
   .grid { scroll-snap-type: x proximity; }
   .column { scroll-snap-align: start; }
-  .add { width: 38px; height: 38px; }
+  .add, .settings { width: 38px; height: 38px; }
 }

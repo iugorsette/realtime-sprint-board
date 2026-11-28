@@ -57,6 +57,10 @@ export const columnSchema = z.object({
   position: z.number(),
   cards: z.array(cardSchema),
 });
+export const columnNameSchema = z.string().trim().min(1).max(80);
+export const createColumnSchema = z.strictObject({ name: columnNameSchema });
+export const deleteColumnSchema = z.strictObject({ expectedName: z.string().max(80) });
+export const renameColumnSchema = createColumnSchema.extend(deleteColumnSchema.shape);
 export const boardSchema = z.object({
   id: idSchema,
   name: z.string(),
@@ -77,6 +81,8 @@ export const moveCardSchema = z.strictObject({
 
 export type Card = z.infer<typeof cardSchema>;
 export type Column = z.infer<typeof columnSchema>;
+export type CreateColumn = z.infer<typeof createColumnSchema>;
+export type RenameColumn = z.infer<typeof renameColumnSchema>;
 export type Board = z.infer<typeof boardSchema>;
 export type Assignee = z.infer<typeof assigneeSchema>;
 export type Priority = z.infer<typeof prioritySchema>;

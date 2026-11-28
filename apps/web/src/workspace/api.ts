@@ -1,4 +1,5 @@
-import { accountSchema, boardSummarySchema, cardLocationSchema, membersSchema, requestErrorSchema, workspaceSchema, type MemberRole } from '@board/shared';
+import { accountSchema, boardSummarySchema, cardLocationSchema, membersSchema, requestErrorSchema, workspaceSchema,
+  type CreateColumn, type MemberRole, type RenameColumn } from '@board/shared';
 
 class WorkspaceError extends Error {
   constructor(readonly status: number, message: string) { super(message); }
@@ -40,6 +41,12 @@ export const createBoard = async (name: string) => boardSummarySchema.parse(awai
 export const locateCard = async (id: string, signal?: AbortSignal) =>
   cardLocationSchema.parse(await request('/card-links/' + encodeURIComponent(id), 'GET', undefined, signal));
 const boardPath = (id: string) => '/boards/' + encodeURIComponent(id);
+const columnsPath = (boardId: string) => boardPath(boardId) + '/columns';
+const columnPath = (boardId: string, id: string) => columnsPath(boardId) + '/' + encodeURIComponent(id);
+export const createColumn = (boardId: string, input: CreateColumn) => request(columnsPath(boardId), 'POST', input);
+export const renameColumn = (boardId: string, id: string, input: RenameColumn) => request(columnPath(boardId, id), 'PATCH', input);
+export const deleteColumn = (boardId: string, id: string, expectedName: string) =>
+  request(columnPath(boardId, id), 'DELETE', { expectedName });
 const memberPath = (boardId: string, accountId: string) => boardPath(boardId) + '/members/' + encodeURIComponent(accountId);
 export const getMembers = async (id: string, signal?: AbortSignal) =>
   membersSchema.parse(await request(boardPath(id) + '/members', 'GET', undefined, signal));

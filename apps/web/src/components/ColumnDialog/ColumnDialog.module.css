@@ -1,0 +1,13 @@
+.form { display: grid; gap: 12px; margin-block-start: 14px; }
+.form label { display: grid; gap: 5px; font-size: .88rem; font-weight: 650; }
+.form input { width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--control-radius); background: var(--surface); }
+.form p { margin: 0; overflow-wrap: anywhere; font-size: .86rem; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.actions button {
+  padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--control-radius);
+  background: var(--surface); color: var(--ink-soft); cursor: pointer;
+}
+.actions button:hover:enabled { background: var(--surface-muted); }
+.actions .primary { border-color: var(--accent); background: var(--accent); color: var(--surface); }
+.actions .primary:hover:enabled { background: var(--accent-dark); }
+.actions .danger, .error { color: var(--danger); }
