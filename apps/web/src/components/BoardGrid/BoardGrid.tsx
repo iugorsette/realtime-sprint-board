@@ -4,13 +4,13 @@ import {
   useDraggable, useDroppable, useSensor, useSensors,
   type Announcements, type KeyboardCoordinateGetter, type ScreenReaderInstructions,
 } from '@dnd-kit/core';
-import { Check, Circle, CircleDot, Columns3, LoaderCircle, Plus } from 'lucide-react';
+import { Check, Circle, CircleDot, Columns3, Ellipsis, Plus } from 'lucide-react';
 import type { Assignee, Card, Column, MoveCard } from '@board/shared';
 import { keyboardSlot, moveTarget, slotId, type Slot } from '../../board/drag';
-import { columnTone } from '../../board/model';
 import { CardSurface, CardTile, priorityNames } from '../CardTile/CardTile';
 import styles from './BoardGrid.module.css';
 
+const defaultColumnIds = ['backlog', 'todo', 'in-progress', 'done'] as const;
 const icons = { backlog: Columns3, todo: Circle, 'in-progress': CircleDot, done: Check } as const;
 const instructions: ScreenReaderInstructions = {
   draggable: 'Press Enter to open the card. Press Space to pick it up, then use the arrow keys to move. Press Space or Enter to drop, or Escape to cancel.',
@@ -70,7 +70,8 @@ function focusHandle(ref: RefObject<HTMLDivElement | null>, cardId: string) {
   });
 }
 
-export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisabled, pendingCards, onOpen, onCreate, onMove, draft }: {
+export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisabled, pendingCards, onOpen, onCreate, onMove, draft,
+  onEditColumn, columnControlsDisabled }: {
   columns: Column[];
   columnTotals: ReadonlyMap<string, number>;
   draft?: { columnId: string; content: ReactNode };
@@ -81,6 +82,8 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisab
   onOpen: (card: Card) => void;
   onCreate: (columnId: string) => void;
   onMove: (card: Card, input: MoveCard) => Promise<void>;
+  onEditColumn?: (column: Column) => void;
+  columnControlsDisabled: boolean;
 }) {
   const [activeCard, setActiveCard] = useState<Card>();
   const grid = useRef<HTMLDivElement>(null);
@@ -150,8 +153,8 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisab
     >
       <div ref={grid} className={styles.grid}>
         {columns.map((column) => {
-          const tone = columnTone(column);
-          const Icon = (tone && icons[tone]) || LoaderCircle;
+          const icon = defaultColumnIds.find((id) => id === column.id) ?? defaultColumnIds[column.position];
+          const Icon = icon ? icons[icon] : Columns3;
           const visibleCount = column.cards.length;
           const totalCount = columnTotals.get(column.id) ?? visibleCount;
           const filtered = visibleCount !== totalCount;
@@ -159,15 +162,19 @@ export function BoardGrid({ columns, columnTotals, assignees, pending, dragDisab
             ? undefined
             : filtered ? 'No matching cards' : 'No cards yet';
           return (
-            <section key={column.id} className={styles.column} data-column={tone} aria-labelledby={`column-${column.id}`}>
+            <section key={column.id} className={styles.column} data-column-color={column.color} aria-labelledby={`column-${column.id}`}>
               <div className={styles.header}>
                 <span className={styles.columnIcon}><Icon size={15} aria-hidden="true" /></span>
-                <h2 id={`column-${column.id}`}>{column.name}</h2>
+                <h2 id={`column-${column.id}`} title={column.name}>{column.name}</h2>
                 <span className={styles.count} aria-label={filtered ? `${visibleCount} of ${totalCount} cards` : `${totalCount} cards`}>
                   {filtered ? `${visibleCount}/${totalCount}` : totalCount}
                 </span>
                 <button type="button" onClick={() => onCreate(column.id)} className={styles.add}
                   aria-label={`Add card to ${column.name}`} disabled={pending || Boolean(draft)}><Plus size={17} aria-hidden="true" /></button>
+                {onEditColumn && <button type="button" className={styles.settings} aria-label={`Edit column ${column.name}`}
+                  aria-haspopup="dialog" disabled={columnControlsDisabled} onClick={() => onEditColumn(column)}>
+                  <Ellipsis size={17} aria-hidden="true" />
+                </button>}
               </div>
               <ul className={styles.cards}>
                 {column.cards.map((card) => (

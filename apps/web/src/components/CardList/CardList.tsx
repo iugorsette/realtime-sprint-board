@@ -1,7 +1,6 @@
 import { memo, useId, useState, type ReactNode } from 'react';
-import { Plus } from 'lucide-react';
+import { Ellipsis, Plus } from 'lucide-react';
 import type { Assignee, Card, Column } from '@board/shared';
-import { columnTone } from '../../board/model';
 import { CardSurface, CardTile, priorityNames } from '../CardTile/CardTile';
 import styles from './CardList.module.css';
 
@@ -38,7 +37,8 @@ const CardRow = memo(function CardRow({ card, assignees, pending, onOpen }: {
   );
 });
 
-export function CardList({ columns, columnTotals, assignees, pending, pendingCards, onOpen, onCreate, draft }: {
+export function CardList({ columns, columnTotals, assignees, pending, pendingCards, onOpen, onCreate, draft,
+  onEditColumn, columnControlsDisabled }: {
   columns: Column[];
   columnTotals: ReadonlyMap<string, number>;
   assignees: ReadonlyMap<string, Assignee>;
@@ -46,6 +46,8 @@ export function CardList({ columns, columnTotals, assignees, pending, pendingCar
   pendingCards: ReadonlySet<string>;
   onOpen: (card: Card) => void;
   onCreate: (columnId: string) => void;
+  onEditColumn?: (column: Column) => void;
+  columnControlsDisabled: boolean;
   draft?: { columnId: string; content: ReactNode };
 }) {
   const headingId = useId();
@@ -58,7 +60,7 @@ export function CardList({ columns, columnTotals, assignees, pending, pendingCar
         const activeDraft = draft?.columnId === column.id ? draft.content : undefined;
         const heading = `${headingId}-${column.id}`;
         return (
-          <section key={column.id} className={styles.section} data-column={columnTone(column)} aria-labelledby={heading}>
+          <section key={column.id} className={styles.section} data-column-color={column.color} aria-labelledby={heading}>
             <div className={styles.heading}>
               <span className={styles.status} aria-hidden="true" />
               <h2 id={heading}>{column.name}</h2>
@@ -67,6 +69,10 @@ export function CardList({ columns, columnTotals, assignees, pending, pendingCar
               </span>
               <button type="button" className={styles.add} aria-label={`Add card to ${column.name}`}
                 disabled={pending || Boolean(draft)} onClick={() => onCreate(column.id)}><Plus size={17} aria-hidden="true" /></button>
+              {onEditColumn && <button type="button" className={styles.settings} aria-label={`Edit column ${column.name}`}
+                aria-haspopup="dialog" disabled={columnControlsDisabled} onClick={() => onEditColumn(column)}>
+                <Ellipsis size={17} aria-hidden="true" />
+              </button>}
             </div>
             {shown > 0 || activeDraft ? (
               <ul className={styles.rows}>

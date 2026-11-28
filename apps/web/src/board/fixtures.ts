@@ -15,7 +15,7 @@ export const third: Card = {
 export const board: Board = {
   id: 'test', name: 'Test', revision: 1, assignees: [],
   columns: [
-    { id: 'todo', name: 'Todo', position: 0, cards: [first, second] },
-    { id: 'done', name: 'Done', position: 1, cards: [third] },
+    { id: 'todo', name: 'Todo', color: 'AMBER', position: 0, cards: [first, second] },
+    { id: 'done', name: 'Done', color: 'GREEN', position: 1, cards: [third] },
   ],
 };

@@ -39,7 +39,8 @@ export class CardsService {
           assignees: { orderBy: { name: 'asc' }, select: { id: true, name: true, initials: true } },
           columns: {
             orderBy: [{ position: 'asc' }, { id: 'asc' }],
-            select: { id: true, name: true, position: true, cards: { orderBy: [{ position: 'asc' }, { id: 'asc' }], include: withAssignments } },
+            select: { id: true, name: true, position: true, color: true,
+              cards: { orderBy: [{ position: 'asc' }, { id: 'asc' }], include: withAssignments } },
           },
         },
       });

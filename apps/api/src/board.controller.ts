@@ -1,10 +1,11 @@
-import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Headers, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import {
-  createCardSchema, idSchema, moveCardSchema, updateCardSchema, versionSchema,
+  createCardSchema, createColumnSchema, deleteColumnSchema, idSchema, moveCardSchema, updateColumnSchema, updateCardSchema, versionSchema,
   type BoardChange, type CardEvent,
 } from '@board/shared';
 import { z } from 'zod';
 import { CardsService } from './cards.service';
+import { ColumnsService } from './columns.service';
 import { BoardGateway } from './board.gateway';
 import { CurrentUser, type Identity } from './auth';
 
@@ -16,11 +17,36 @@ export function parse<T>(schema: z.ZodType<T>, value: unknown): T {
 
 @Controller('boards/:boardId')
 export class BoardController {
-  constructor(private readonly cards: CardsService, private readonly gateway: BoardGateway) {}
+  constructor(private readonly cards: CardsService, private readonly columns: ColumnsService, private readonly gateway: BoardGateway) {}
 
   @Get()
   board(@Param('boardId') id: string, @CurrentUser() user: Identity) {
     return this.cards.board(parse(idSchema, id), user.id);
+  }
+
+  @Post('columns')
+  @HttpCode(204)
+  async createColumn(@Param('boardId') boardId: string, @CurrentUser() user: Identity, @Body() body: unknown) {
+    const id = parse(idSchema, boardId);
+    await this.columns.create(id, user.id, parse(createColumnSchema, body));
+    await this.gateway.refresh(id);
+  }
+
+  @Patch('columns/:id')
+  @HttpCode(204)
+  async updateColumn(@Param('boardId') boardId: string, @Param('id') columnId: string, @CurrentUser() user: Identity, @Body() body: unknown) {
+    const id = parse(idSchema, boardId);
+    await this.columns.update(id, user.id, parse(idSchema, columnId), parse(updateColumnSchema, body));
+    await this.gateway.refresh(id);
+  }
+
+  @Delete('columns/:id')
+  @HttpCode(204)
+  async deleteColumn(@Param('boardId') boardId: string, @Param('id') columnId: string, @CurrentUser() user: Identity,
+    @Body() body: unknown) {
+    const id = parse(idSchema, boardId);
+    await this.columns.delete(id, user.id, parse(idSchema, columnId), parse(deleteColumnSchema, body).expectedName);
+    await this.gateway.refresh(id);
   }
 
   private async announce(event: CardEvent, operation: Promise<BoardChange | null>, user: Identity, socketId?: string) {

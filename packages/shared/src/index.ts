@@ -51,12 +51,23 @@ export const cardSchema = cardFields.extend({
   position: z.number(),
   version: versionSchema,
 });
+export const columnColorSchema = z.enum(['GRAY', 'RED', 'AMBER', 'GREEN', 'TEAL', 'BLUE', 'PURPLE', 'PINK']);
 export const columnSchema = z.object({
   id: idSchema,
   name: z.string(),
   position: z.number(),
+  color: columnColorSchema,
   cards: z.array(cardSchema),
 });
+export const columnNameSchema = z.string().trim().min(1).max(80);
+export const createColumnSchema = z.strictObject({ name: columnNameSchema, color: columnColorSchema.default('GRAY') });
+export const deleteColumnSchema = z.strictObject({ expectedName: z.string().max(80) });
+export const updateColumnSchema = deleteColumnSchema.extend({
+  name: columnNameSchema,
+  color: columnColorSchema.optional(),
+  expectedColor: columnColorSchema.optional(),
+}).refine(({ color, expectedColor }) => (color === undefined) === (expectedColor === undefined),
+  { message: 'A color change requires the previous color.' });
 export const boardSchema = z.object({
   id: idSchema,
   name: z.string(),
@@ -77,6 +88,9 @@ export const moveCardSchema = z.strictObject({
 
 export type Card = z.infer<typeof cardSchema>;
 export type Column = z.infer<typeof columnSchema>;
+export type ColumnColor = z.infer<typeof columnColorSchema>;
+export type CreateColumn = z.infer<typeof createColumnSchema>;
+export type UpdateColumn = z.infer<typeof updateColumnSchema>;
 export type Board = z.infer<typeof boardSchema>;
 export type Assignee = z.infer<typeof assigneeSchema>;
 export type Priority = z.infer<typeof prioritySchema>;

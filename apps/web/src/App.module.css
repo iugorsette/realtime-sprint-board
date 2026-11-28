@@ -5,6 +5,9 @@
 .connection[data-connection="live"] { color: var(--live-ink); background: var(--live-surface); border-color: transparent; }
 .connection[data-connection="offline"] { color: var(--warning-ink); background: var(--warning-surface); border-color: transparent; }
 .main { padding-top: 19px; padding-bottom: 28px; }
+.columnActions { display: flex; justify-content: flex-end; margin-block-end: 8px; }
+.addColumn { display: inline-flex; align-items: center; gap: 5px; min-height: 38px; padding: 5px 9px; border: 1px solid var(--line); border-radius: var(--control-radius); background: var(--surface); color: var(--ink-soft); font-size: .82rem; font-weight: 650; cursor: pointer; }
+.addColumn:hover:enabled { background: var(--surface-muted); }
 .primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; border: 1px solid var(--accent); border-radius: var(--control-radius); padding: 9px 13px; background: var(--accent); color: var(--surface); font-size: .85rem; font-weight: 650; cursor: pointer; }
 .primary:hover { background: var(--accent-dark); }
 .toolbar { margin: 0 0 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; }
