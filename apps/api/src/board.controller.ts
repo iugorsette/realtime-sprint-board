@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, Headers, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import {
-  createCardSchema, createColumnSchema, deleteColumnSchema, idSchema, moveCardSchema, renameColumnSchema, updateCardSchema, versionSchema,
+  createCardSchema, createColumnSchema, deleteColumnSchema, idSchema, moveCardSchema, updateColumnSchema, updateCardSchema, versionSchema,
   type BoardChange, type CardEvent,
 } from '@board/shared';
 import { z } from 'zod';
@@ -34,9 +34,9 @@ export class BoardController {
 
   @Patch('columns/:id')
   @HttpCode(204)
-  async renameColumn(@Param('boardId') boardId: string, @Param('id') columnId: string, @CurrentUser() user: Identity, @Body() body: unknown) {
+  async updateColumn(@Param('boardId') boardId: string, @Param('id') columnId: string, @CurrentUser() user: Identity, @Body() body: unknown) {
     const id = parse(idSchema, boardId);
-    await this.columns.rename(id, user.id, parse(idSchema, columnId), parse(renameColumnSchema, body));
+    await this.columns.update(id, user.id, parse(idSchema, columnId), parse(updateColumnSchema, body));
     await this.gateway.refresh(id);
   }
 

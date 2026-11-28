@@ -46,7 +46,7 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
   const [reviewId, setReviewId] = useState<string>();
   const [filters, setFilters] = useState(emptyFilters);
   const [draftColumn, setDraftColumn] = useState<string>();
-  const [columnSettings, setColumnSettings] = useState<Pick<Column, 'id' | 'name'> | 'new'>();
+  const [columnSettings, setColumnSettings] = useState<Pick<Column, 'id' | 'name' | 'color'> | 'new'>();
   const addColumnButton = useRef<HTMLButtonElement>(null);
   const [notice, setNotice] = useState('');
   const closeOtherDialogs = useCallback(() => {
@@ -121,7 +121,7 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
   );
   const viewProps = { columns, columnTotals, assignees, pending: pending || readOnly, pendingCards: sync.pendingCards,
     onOpen: openCard, onCreate: setDraftColumn, draft: readOnly ? undefined : draft,
-    onEditColumn: canManageColumns ? ({ id, name }: Column) => setColumnSettings({ id, name }) : undefined,
+    onEditColumn: canManageColumns ? ({ id, name, color }: Column) => setColumnSettings({ id, name, color }) : undefined,
     columnControlsDisabled };
 
   function openReview(id?: string) {
@@ -195,7 +195,7 @@ export function App({ access, headerActions }: { access: BoardSummary; headerAct
               <ColumnDialog boardId={board.id} column={editedColumn} deleteBlocked={deleteBlocked}
                 onClose={() => setColumnSettings(undefined)} onRefresh={sync.retry} onSaved={(action) => {
                   setColumnSettings(undefined);
-                  setNotice(action === 'delete' ? 'Column deleted.' : editedColumn ? 'Column renamed.' : 'Column added.');
+                  setNotice(action === 'delete' ? 'Column deleted.' : editedColumn ? 'Column updated.' : 'Column added.');
                   if (action === 'delete') requestAnimationFrame(() => addColumnButton.current?.focus({ preventScroll: true }));
                 }} />
             )}

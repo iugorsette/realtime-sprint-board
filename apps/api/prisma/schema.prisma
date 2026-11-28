@@ -20,6 +20,17 @@ enum MemberRole {
   VIEWER
 }
 
+enum ColumnColor {
+  GRAY
+  RED
+  AMBER
+  GREEN
+  TEAL
+  BLUE
+  PURPLE
+  PINK
+}
+
 model Account {
   id         String        @id @default(uuid())
   email      String        @unique
@@ -116,6 +127,7 @@ model Column {
   id       String @id @default(uuid())
   name     String
   position Int
+  color    ColumnColor @default(GRAY)
   boardId  String @map("board_id")
   board    Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards    Card[]

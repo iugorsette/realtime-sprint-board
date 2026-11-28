@@ -1,11 +1,16 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import type { MemberRole } from '@board/shared';
+import type { ColumnColor, MemberRole } from '@board/shared';
 import { initials, publicAccount, type Identity } from './auth';
 import { Database } from './database';
 import type { Prisma } from './generated/prisma/client';
 
 type Transaction = Prisma.TransactionClient;
-const columnNames = ['Backlog', 'Todo', 'In Progress', 'Done'];
+const starterColumns = [
+  { name: 'Backlog', color: 'RED' },
+  { name: 'Todo', color: 'AMBER' },
+  { name: 'In Progress', color: 'PURPLE' },
+  { name: 'Done', color: 'GREEN' },
+] satisfies { name: string; color: ColumnColor }[];
 const accountDetails = { id: true, name: true } as const;
 
 export function visibleBoards(accountId: string): Prisma.BoardWhereInput {
@@ -85,7 +90,7 @@ export class WorkspaceService {
       const account = await tx.account.findUniqueOrThrow({ where: { id: accountId }, select: { name: true } });
       const board = await tx.board.create({ data: {
         id: crypto.randomUUID(), name, ownerId: accountId,
-        columns: { create: columnNames.map((name, position) => ({ name, position })) },
+        columns: { create: starterColumns.map((column, position) => ({ ...column, position })) },
         assignees: { create: { accountId, name: account.name || 'Board owner', initials: initials(account.name) } },
       }, select: { id: true, name: true } });
       return { ...board, role: 'OWNER' as const };

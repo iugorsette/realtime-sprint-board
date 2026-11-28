@@ -1,7 +1,6 @@
 import { memo, useId, useState, type ReactNode } from 'react';
 import { Ellipsis, Plus } from 'lucide-react';
 import type { Assignee, Card, Column } from '@board/shared';
-import { columnTone } from '../../board/model';
 import { CardSurface, CardTile, priorityNames } from '../CardTile/CardTile';
 import styles from './CardList.module.css';
 
@@ -61,7 +60,7 @@ export function CardList({ columns, columnTotals, assignees, pending, pendingCar
         const activeDraft = draft?.columnId === column.id ? draft.content : undefined;
         const heading = `${headingId}-${column.id}`;
         return (
-          <section key={column.id} className={styles.section} data-column={columnTone(column)} aria-labelledby={heading}>
+          <section key={column.id} className={styles.section} data-column-color={column.color} aria-labelledby={heading}>
             <div className={styles.heading}>
               <span className={styles.status} aria-hidden="true" />
               <h2 id={heading}>{column.name}</h2>

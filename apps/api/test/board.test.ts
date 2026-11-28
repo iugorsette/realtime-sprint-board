@@ -44,7 +44,7 @@ async function snapshot(): Promise<Board> {
   return (await request(`/boards/${boardId}`)).json();
 }
 
-async function create(columnId = first) {
+async function create(columnId: string = first) {
   const response = await request(cards, 'POST', { ...fields, columnId });
   expect(response.status).toBe(201);
   const { change } = await response.json() as { change: BoardChange };
@@ -121,7 +121,7 @@ it('appends and renames columns by ID, refreshes collaborators, and deletes empt
     expect((await request(columns, 'POST', { name: '  Testing  ' })).status).toBe(204);
     await refreshed;
     const created = (await snapshot()).columns.at(-1)!;
-    expect(created).toMatchObject({ name: 'Testing', position: 2, cards: [] });
+    expect(created).toMatchObject({ name: 'Testing', position: 2, color: 'GRAY', cards: [] });
     expect((await request(columns, 'POST', { name: 'Testing' })).status).toBe(409);
     const path = `${columns}/${created.id}`;
     expect((await request(path, 'PATCH', { name: 'Verification', expectedName: 'Testing' })).status).toBe(204);
@@ -132,6 +132,20 @@ it('appends and renames columns by ID, refreshes collaborators, and deletes empt
   } finally {
     subscriber.disconnect();
   }
+});
+
+it('validates colors, preserves cards and rejects a stale color update', async () => {
+  expect((await request(columns, 'POST', { name: 'Invalid', color: '#007eff' })).status).toBe(400);
+  expect((await request(columns, 'POST', { name: 'Review', color: 'TEAL' })).status).toBe(204);
+  const column = (await snapshot()).columns.at(-1)!;
+  expect(column.color).toBe('TEAL');
+  const card = await create(column.id);
+  const path = `${columns}/${column.id}`;
+  expect((await request(path, 'PATCH', { name: 'Review', expectedName: 'Review', color: 'BLUE' })).status).toBe(400);
+  expect((await request(path, 'PATCH', { name: 'Review', expectedName: 'Review', color: 'BLUE', expectedColor: 'TEAL' })).status).toBe(204);
+  expect((await request(path, 'PATCH', { name: 'Review', expectedName: 'Review', color: 'PINK', expectedColor: 'TEAL' })).status).toBe(409);
+  expect((await request(path, 'PATCH', { name: 'QA review', expectedName: 'Review' })).status).toBe(204);
+  expect((await snapshot()).columns.at(-1)).toMatchObject({ id: column.id, name: 'QA review', color: 'BLUE', cards: [card] });
 });
 
 it('restricts column writes to the owner and preserves cards when deletion races with creation', async () => {

@@ -38,7 +38,9 @@ Drag -> Query cache: cancel snapshot request, snapshot board, patch preview
 
 The board row lock serializes writes at demo scale. Read snapshots use repeatable read so cards and revision describe the same commit. A 409 restores the optimistic card, applies the authoritative card when available and refreshes the snapshot. Network errors also trigger a refresh because the server might have committed before the response was lost. Reserve one mutation per tab. Buffer socket events during a mutation or snapshot fetch. Discard events already represented by the cache. A revision gap triggers a snapshot, then newer buffered events are replayed. Rejoin and fetch on reconnect because missed messages may not be replayed by Socket.IO.
 
-Columns use the existing board row lock to serialize owner changes with card creation and moves. Rename and delete requests carry the original name, and deletion checks for cards regardless of active filters. A successful column write increments the board revision in the transaction. The gateway asks authorized board clients to refresh after commit.
+Columns use the existing board row lock to serialize owner changes with card creation and moves. Update and delete requests carry the original name. Color updates also carry the original color to detect concurrent edits. Deletion checks for cards regardless of active filters. A successful column write increments the board revision in the transaction. The gateway asks authorized board clients to refresh after commit.
+
+PostgreSQL stores column colors as an enum exposed in the board snapshot. A migration backfills the previous colors using the legacy column IDs and positions. The palette, Board, List and card status controls share the same color tokens.
 
 TanStack Query owns the board snapshot. Local state owns filter selections, inline drafts and pending field edits, the active drag and connection status. Filter projections retain card references. Draggable card wrappers subscribe to drag context independently of presentational card bodies.
 

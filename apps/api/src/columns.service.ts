@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import type { CreateColumn, RenameColumn } from '@board/shared';
+import type { ColumnColor, CreateColumn, UpdateColumn } from '@board/shared';
 import { Database } from './database';
 import type { Prisma } from './generated/prisma/client';
 import { lockBoard, requireBoard } from './workspace.service';
@@ -27,27 +27,29 @@ export class ColumnsService {
     if (duplicate) throw new ConflictException('A column with this name already exists.');
   }
 
-  private async checkCurrent(tx: Transaction, boardId: string, id: string, expectedName: string) {
-    const column = await tx.column.findUnique({ where: { id, boardId }, select: { name: true } });
+  private async checkCurrent(tx: Transaction, boardId: string, id: string, expectedName: string, expectedColor?: ColumnColor) {
+    const column = await tx.column.findUnique({ where: { id, boardId }, select: { name: true, color: true } });
     if (!column) throw new NotFoundException('Column not found.');
-    if (column.name !== expectedName) throw new ConflictException('This column changed. Reopen its settings and try again.');
+    if (column.name !== expectedName || (expectedColor !== undefined && column.color !== expectedColor)) {
+      throw new ConflictException('This column changed. Reopen its settings and try again.');
+    }
   }
 
-  create(boardId: string, accountId: string, { name }: CreateColumn) {
+  create(boardId: string, accountId: string, { name, color }: CreateColumn) {
     return this.change(boardId, accountId, async (tx) => {
       await this.checkName(tx, boardId, name);
       const last = await tx.column.findFirst({
         where: { boardId }, orderBy: { position: 'desc' }, select: { position: true },
       });
-      await tx.column.create({ data: { boardId, name, position: (last?.position ?? -1) + 1 } });
+      await tx.column.create({ data: { boardId, name, color, position: (last?.position ?? -1) + 1 } });
     });
   }
 
-  rename(boardId: string, accountId: string, id: string, { name, expectedName }: RenameColumn) {
+  update(boardId: string, accountId: string, id: string, { name, color, expectedName, expectedColor }: UpdateColumn) {
     return this.change(boardId, accountId, async (tx) => {
-      await this.checkCurrent(tx, boardId, id, expectedName);
+      await this.checkCurrent(tx, boardId, id, expectedName, expectedColor);
       await this.checkName(tx, boardId, name, id);
-      await tx.column.update({ where: { id, boardId }, data: { name } });
+      await tx.column.update({ where: { id, boardId }, data: { name, color } });
     });
   }
 
