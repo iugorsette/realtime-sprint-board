@@ -11,7 +11,7 @@ export function CardComposer({ columnId, pending, offline, onClose, onSave, onDi
   onClose: () => void;
   onSave: (input: CreateCard & { id: string }) => Promise<void>;
   onDiscard: (id: string) => void;
-  onWorkOffline: () => Promise<boolean>;
+  onWorkOffline?: () => Promise<boolean>;
 }) {
   const title = useRef<HTMLInputElement>(null);
   const saving = useRef(false);
@@ -53,7 +53,8 @@ export function CardComposer({ columnId, pending, offline, onClose, onSave, onDi
     } catch (error) {
       const connectionError = isConnectionError(error);
       setCanWorkOffline(connectionError);
-      setError(connectionError ? 'Could not reach the server. Your card is saved on this device.'
+      setError(connectionError ? onWorkOffline ? 'Could not reach the server. Your card is saved on this device.'
+        : 'Could not reach the server. Keep this page open and try again.'
         : error instanceof Error ? error.message : 'Unable to create this card.');
     } finally {
       saving.current = false;
@@ -90,9 +91,9 @@ export function CardComposer({ columnId, pending, offline, onClose, onSave, onDi
         {canWorkOffline && (
           <div className={styles.actions}>
             <button type="button" disabled={pending} onClick={() => void save()}>Retry</button>
-            <button type="button" disabled={pending} onClick={async () => {
+            {onWorkOffline && <button type="button" disabled={pending} onClick={async () => {
               if (await onWorkOffline()) onClose();
-            }}>Keep editing offline</button>
+            }}>Keep editing offline</button>}
           </div>
         )}
       </form>

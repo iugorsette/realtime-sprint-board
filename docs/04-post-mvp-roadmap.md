@@ -11,6 +11,6 @@ Work on one feature at a time, with one branch and pull request per feature. Rev
 ## Feature sequence
 
 1. **Card sharing.** Delivered in [PR #1](https://github.com/iugorsette/realtime-sprint-board/pull/1). Open saved cards by URL, retain selection on reload, and copy the link from the card dialog.
-2. **List view** (`feat/list-view`). Group cards into lists by status and reuse board filters, search, and card links. This is the current delivery.
-3. **Accounts and private boards.** Identify people on their first visit, offer simple signup with a unique email as the account key, and allow profile and avatar editing. Define roles for owned and shared boards, with proposed limits of five owned boards and membership in ten boards owned by others. Specify protections for brute-force attempts, XSS, sensitive data exposure, and cross-board access through HTTP, live updates, and offline data.
+2. **List view.** Delivered in [PR #2](https://github.com/iugorsette/realtime-sprint-board/pull/2). Group cards by status and reuse board filters, search, and card links. The card priority bar followed in [PR #3](https://github.com/iugorsette/realtime-sprint-board/pull/3).
+3. **Accounts and private boards** (`feat/accounts-private-boards`). Sign in with a one-time email code, edit a profile and upload an avatar, create private boards, and manage roles and invitations. This delivery enforces the five-owned and ten-joined limits and requires an online session for private boards.
 4. **Rich descriptions.** Evaluate Tiptap, Lexical, and Slate for block-style editing. Compare cost and licensing, production bundle size, and lazy loading. Check migration of existing descriptions and effects on search, offline editing, and conflict review before choosing an editor.

@@ -101,7 +101,7 @@ export class BoardSync {
         const card = snapshot.columns.flatMap(({ cards }) => cards).find(({ id }) => id === action.id);
         if (card) this.write(previewMove(snapshot, card, action.input));
       }
-      const change = await changeCard(action, socketId);
+      const change = await changeCard(this.options.queryKey[1], action, socketId);
       if (snapshot && action.type === 'move') this.write(snapshot);
       if (change) this.receive(change);
       return change;

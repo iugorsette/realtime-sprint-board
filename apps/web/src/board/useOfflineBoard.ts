@@ -23,8 +23,8 @@ function findConflicts(board: Board, changes: PendingChange[]) {
   });
 }
 
-export function useOfflineBoard(boardId: string) {
-  const store = useMemo(() => new OfflineStore(boardId), [boardId]);
+export function useOfflineBoard(boardId: string, allowOffline = true) {
+  const store = useMemo(() => new OfflineStore(boardId, allowOffline), [boardId, allowOffline]);
   const state = useSyncExternalStore(store.subscribe, store.read);
   const online = useBoard(boardId, store, state.offline);
   const server = online.query.data;
@@ -37,6 +37,7 @@ export function useOfflineBoard(boardId: string) {
   const conflicts = useMemo(() => server && !state.offline ? findConflicts(server, state.changes) : [], [server, state]);
 
   async function workOffline() {
+    if (!allowOffline) return false;
     setNotice('');
     try {
       if (server) await store.saveSnapshot(server);
@@ -86,7 +87,8 @@ export function useOfflineBoard(boardId: string) {
       }
     }
     return result.status === 'error' && result.offlineAvailable
-      ? { ...result, message: 'Could not reach the server. Your draft is saved on this device.' } : result;
+      ? { ...result, message: allowOffline ? 'Could not reach the server. Your draft is saved on this device.'
+        : 'Could not reach the server. Keep this page open and try again.' } : result;
   }
 
   async function discardCreation(id: string) {
@@ -123,7 +125,7 @@ export function useOfflineBoard(boardId: string) {
     setSyncing(true);
     setNotice('');
     try {
-      return await navigator.locks.request(store.replayLock, run);
+      return await (allowOffline ? navigator.locks.request(store.replayLock, run) : run());
     } catch (error) {
       setNotice(saveError(error));
     } finally {

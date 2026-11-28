@@ -5,6 +5,29 @@ export { mvpCardId } from './mvpCardId';
 
 export const DEMO_BOARD_ID = 'sprint-board';
 export const idSchema = z.string().trim().min(1).max(100);
+export const emailSchema = z.string().trim().max(254).pipe(z.email()).transform((value) => value.toLowerCase());
+export const roleSchema = z.enum(['OWNER', 'EDITOR', 'VIEWER']);
+export const memberRoleSchema = roleSchema.exclude(['OWNER']);
+export const boardNameSchema = z.string().trim().min(1).max(80);
+export const profileSchema = z.strictObject({
+  name: z.string().trim().min(1).max(60),
+  avatar: z.string().max(90_000).regex(/^[A-Za-z0-9+/]+={0,2}$/).nullable().optional(),
+});
+export const boardSummarySchema = z.object({ id: idSchema, name: boardNameSchema, role: roleSchema });
+export const accountSchema = z.object({ id: idSchema, email: emailSchema, name: z.string(), avatar: z.string().nullable() });
+export const cardLocationSchema = z.object({ boardId: idSchema });
+export const requestErrorSchema = z.object({ message: z.string() });
+export const workspaceSchema = z.object({
+  boards: z.array(boardSummarySchema),
+  invitations: z.array(boardSummarySchema.extend({ role: memberRoleSchema })),
+});
+export const membersSchema = z.object({
+  people: z.array(z.object({ id: idSchema, name: z.string(), role: roleSchema })),
+  invitations: z.array(z.object({ email: emailSchema, role: memberRoleSchema })),
+});
+export type Account = z.infer<typeof accountSchema>;
+export type BoardSummary = z.infer<typeof boardSummarySchema>;
+export type MemberRole = z.infer<typeof memberRoleSchema>;
 export const prioritySchema = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
 export const assigneeSchema = z.object({
   id: idSchema,
@@ -74,7 +97,9 @@ export interface CardConflict {
 }
 export const cardEvents = ['card:created', 'card:updated', 'card:moved', 'card:deleted'] as const;
 export type CardEvent = typeof cardEvents[number];
-export type ServerToClientEvents = Record<CardEvent, (change: BoardChange) => void>;
+export type ServerToClientEvents = Record<CardEvent, (change: BoardChange) => void> & {
+  'board:refresh': () => void;
+};
 export interface ClientToServerEvents {
   'board:join': (boardId: string, acknowledge: (result: { ok: boolean }) => void) => void;
 }

@@ -10,7 +10,7 @@ export function SyncDialog({ board, offline, syncing, pendingCount, notice, conf
   pendingCount: number;
   notice: string;
   conflictCount: number;
-  onWorkOffline: () => Promise<boolean>;
+  onWorkOffline?: () => Promise<boolean>;
   onResume: () => Promise<void>;
   onClose: () => void;
   onReview: () => void;
@@ -22,7 +22,7 @@ export function SyncDialog({ board, offline, syncing, pendingCount, notice, conf
       {offline && <p>Changes stay in this browser until you resume sync.</p>}
       {pendingCount > 0 && <p>{pendingCount} {pendingCount === 1 ? 'change' : 'changes'} pending</p>}
       <div className={styles.actions}>
-        {!offline && <button type="button" disabled={syncing || !board} onClick={async () => {
+        {!offline && onWorkOffline && <button type="button" disabled={syncing || !board} onClick={async () => {
           if (await onWorkOffline()) onClose();
         }}>Work offline</button>}
         {(offline || pendingCount > conflictCount) && (

@@ -28,14 +28,15 @@ export type CardAction =
   | { type: 'move'; id: string; input: MoveCard }
   | { type: 'delete'; id: string; version: number };
 
-export async function changeCard(action: CardAction, socketId?: string): Promise<BoardChange | null> {
+export async function changeCard(boardId: string, action: CardAction, socketId?: string): Promise<BoardChange | null> {
   const headers = new Headers({ 'Content-Type': 'application/json' });
   const signal = AbortSignal.timeout(10000);
+  const cards = `/boards/${encodeURIComponent(boardId)}/cards`;
   if (socketId) headers.set('x-socket-id', socketId);
   if (action.type === 'create') {
-    return (await request('/cards', { method: 'POST', headers, signal, body: JSON.stringify(action.input) })).change;
+    return (await request(cards, { method: 'POST', headers, signal, body: JSON.stringify(action.input) })).change;
   }
-  const path = `/cards/${encodeURIComponent(action.id)}`;
+  const path = `${cards}/${encodeURIComponent(action.id)}`;
   if (action.type === 'delete') {
     return (await request(`${path}?expectedVersion=${action.version}`, { method: 'DELETE', headers, signal })).change;
   }

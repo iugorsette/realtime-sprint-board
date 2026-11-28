@@ -8,6 +8,9 @@ function offlineShell(): Plugin {
   return {
     name: 'sprint-board-offline-shell',
     apply: 'build',
+    transformIndexHtml: () => [{ tag: 'meta', attrs: {
+      'http-equiv': 'Content-Security-Policy', content: "script-src 'self'; object-src 'none'; base-uri 'none'",
+    }, injectTo: 'head-prepend' }],
     generateBundle: {
       order: 'post',
       handler(_options, bundle) {

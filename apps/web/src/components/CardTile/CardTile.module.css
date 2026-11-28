@@ -10,6 +10,15 @@
 
 .summary { display: grid; gap: 4px; padding: 12px 12px 10px; }
 
+.content[data-layout="board"] {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  block-size: 7.5rem;
+}
+.content[data-layout="board"] .summary { align-content: start; gap: 3px; padding: .5rem .75rem .25rem; }
+.content[data-layout="board"] .priorityMeter { margin-block: 0 2px; }
+.content[data-layout="board"] .meta { min-block-size: 2.1875rem; }
+
 .title, .description {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -135,6 +144,10 @@
   display: block;
   overflow: visible;
   white-space: pre-wrap;
+}
+:global(html[data-full-descriptions="true"]) .content[data-layout="board"] {
+  block-size: auto;
+  min-block-size: 7.5rem;
 }
 .pendingSync {
   position: relative;
